@@ -23,7 +23,7 @@ export default function Login() {
       if (isRegister) {
 
         await axios.post(
-          'http://localhost:5000/api/auth/register',
+          'https://attendance-backend-32mo.onrender.com/api/auth/register',
           {
             name,
             email,
@@ -36,7 +36,7 @@ export default function Login() {
       } else {
 
         const res = await axios.post(
-          'http://localhost:5000/api/auth/login',
+          'https://attendance-backend-32mo.onrender.comhttp://localhost:5000/api/auth/login',
           {
             email,
             password

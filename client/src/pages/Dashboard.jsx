@@ -18,7 +18,7 @@ export default function Dashboard() {
     try {
 
       const res = await axios.post(
-        'http://localhost:5000/api/attendance/clock-in',
+        'https://attendance-backend-32mo.onrender.com/api/attendance/clock-in',
         {
           userId: user.id,
 userName: user.name
@@ -41,7 +41,7 @@ userName: user.name
     try {
 
       await axios.post(
-        'http://localhost:5000/api/attendance/clock-out',
+        'https://attendance-backend-32mo.onrender.com/api/attendance/clock-out',
         {
           attendanceId
         }
