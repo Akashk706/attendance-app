@@ -1,0 +1,26 @@
+[
+  {
+    "id": "1779794702549",
+    "userId": "1779794481923",
+    "date": "5/26/2026",
+    "clockIn": "4:55:02 PM",
+    "clockOut": "4:55:05 PM",
+    "status": "Working"
+  },
+  {
+    "id": "1779794714033",
+    "userId": "1779794481923",
+    "date": "5/26/2026",
+    "clockIn": "4:55:14 PM",
+    "clockOut": "",
+    "status": "Break"
+  },
+  {
+    "id": "1779797434233",
+    "userId": "1779794481923",
+    "date": "5/26/2026",
+    "clockIn": "5:40:34 PM",
+    "clockOut": "5:41:11 PM",
+    "status": "Working"
+  }
+]
