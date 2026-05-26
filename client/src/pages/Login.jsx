@@ -36,7 +36,7 @@ export default function Login() {
       } else {
 
         const res = await axios.post(
-          'https://attendance-backend-32mo.onrender.comhttp://localhost:5000/api/auth/login',
+          'https://attendance-backend-32mo.onrender.com/api/auth/login',
           {
             email,
             password
