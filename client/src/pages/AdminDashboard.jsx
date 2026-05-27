@@ -9,6 +9,9 @@ export default function AdminDashboard() {
   const [search, setSearch] =
     useState("");
 
+  const [statusFilter, setStatusFilter] =
+    useState("All");
+
   const BACKEND_URL =
     "https://attendance-backend-32mo.onrender.com";
 
@@ -16,6 +19,7 @@ export default function AdminDashboard() {
 
 
 
+  // FETCH ATTENDANCE
   const fetchAttendance = async () => {
 
     const res = await axios.get(
@@ -33,6 +37,14 @@ export default function AdminDashboard() {
 
     fetchAttendance();
 
+    const interval = setInterval(() => {
+
+      fetchAttendance();
+
+    }, 3000);
+
+    return () => clearInterval(interval);
+
   }, []);
 
 
@@ -40,15 +52,38 @@ export default function AdminDashboard() {
 
 
 
-  const filteredRecords =
-    records.filter(item =>
 
-      item.userName
-      ?.toLowerCase()
-      .includes(
-        search.toLowerCase()
-      )
-    );
+  // FILTER LOGIC
+  const filteredRecords =
+    records.filter(item => {
+
+      const nameMatch =
+        item.userName
+        ?.toLowerCase()
+        .includes(
+          search.toLowerCase()
+        );
+
+
+
+      const statusMatch =
+
+        statusFilter === "All"
+
+        ? true
+
+        : item.status === statusFilter;
+
+
+
+      return (
+        nameMatch &&
+        statusMatch
+      );
+
+    });
+
+
 
 
 
@@ -76,20 +111,82 @@ export default function AdminDashboard() {
 
 
 
-      <input
-        type="text"
-        placeholder="Search Employee"
-        value={search}
-        onChange={(e) =>
-          setSearch(e.target.value)
-        }
+
+
+      {/* FILTER SECTION */}
+      <div
         style={{
-          padding: "12px",
-          width: "300px",
-          borderRadius: "10px",
-          marginBottom: "20px"
+          display: "flex",
+          gap: "20px",
+          marginBottom: "25px",
+          flexWrap: "wrap"
         }}
-      />
+      >
+
+
+
+
+        {/* SEARCH */}
+        <input
+          type="text"
+          placeholder="Search Employee"
+          value={search}
+          onChange={(e) =>
+            setSearch(e.target.value)
+          }
+          style={{
+            padding: "12px",
+            width: "250px",
+            borderRadius: "10px",
+            border: "none"
+          }}
+        />
+
+
+
+
+
+
+
+        {/* STATUS FILTER */}
+        <select
+          value={statusFilter}
+          onChange={(e) =>
+            setStatusFilter(
+              e.target.value
+            )
+          }
+          style={{
+            padding: "12px",
+            width: "200px",
+            borderRadius: "10px",
+            border: "none"
+          }}
+        >
+
+          <option value="All">
+            All Status
+          </option>
+
+          <option value="Working">
+            Working
+          </option>
+
+          <option value="Break">
+            Break
+          </option>
+
+          <option value="Completed">
+            Completed
+          </option>
+
+          <option value="Not Working">
+            Not Working
+          </option>
+
+        </select>
+
+      </div>
 
 
 
@@ -98,6 +195,8 @@ export default function AdminDashboard() {
 
 
 
+
+      {/* TABLE */}
       <table
         border="1"
         width="100%"
@@ -123,9 +222,12 @@ export default function AdminDashboard() {
 
             <th>Clock Out</th>
 
+            <th>Working Hours</th>
+
           </tr>
 
         </thead>
+
 
 
 
@@ -149,9 +251,50 @@ export default function AdminDashboard() {
                   {item.date}
                 </td>
 
+
+
+
+
+
+
                 <td>
-                  {item.status}
+
+                  <span
+                    style={{
+                      padding:
+                        "6px 12px",
+
+                      borderRadius:
+                        "20px",
+
+                      color: "white",
+
+                      background:
+
+                        item.status === "Working"
+                        ? "#f59e0b"
+
+                        : item.status === "Break"
+                        ? "#3b82f6"
+
+                        : item.status === "Completed"
+                        ? "#10b981"
+
+                        : "#ef4444"
+                    }}
+                  >
+
+                    {item.status}
+
+                  </span>
+
                 </td>
+
+
+
+
+
+
 
                 <td>
                   {item.clockIn}
@@ -159,6 +302,10 @@ export default function AdminDashboard() {
 
                 <td>
                   {item.clockOut || "-"}
+                </td>
+
+                <td>
+                  {item.workingHours || "0"}
                 </td>
 
               </tr>
