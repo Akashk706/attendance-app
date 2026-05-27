@@ -5,6 +5,12 @@ export default function Dashboard() {
 
   const [attendance, setAttendance] = useState([]);
 
+  const [todayStatus, setTodayStatus] =
+    useState("");
+
+  const [feeling, setFeeling] =
+    useState("");
+
   const user = JSON.parse(
     localStorage.getItem("user")
   );
@@ -49,16 +55,28 @@ export default function Dashboard() {
   // CLOCK IN
   const handleClockIn = async () => {
 
+    if (!todayStatus || !feeling) {
+
+      alert(
+        "Please select today's status and feeling"
+      );
+
+      return;
+    }
+
     await axios.post(
       `${BACKEND_URL}/api/attendance/clock-in`,
       {
         userId: user.id,
-        userName: user.name
+        userName: user.name,
+        todayStatus,
+        feeling
       }
     );
 
     fetchAttendance();
   };
+
 
 
 
@@ -96,6 +114,7 @@ export default function Dashboard() {
 
 
 
+
   return (
 
     <div
@@ -106,6 +125,7 @@ export default function Dashboard() {
         color: "white"
       }}
     >
+
 
 
       {/* HEADER */}
@@ -160,6 +180,7 @@ export default function Dashboard() {
 
 
 
+
       {/* STATUS CARD */}
       <div
         style={{
@@ -197,22 +218,118 @@ export default function Dashboard() {
 
 
 
-      {/* BUTTONS */}
-      <div
-        style={{
-          marginBottom: "25px"
-        }}
-      >
 
-        {
 
-          !currentWorking && (
+      {/* START DAY SECTION */}
+      {
+
+        !currentWorking && (
+
+          <div
+            style={{
+              background: "#1e293b",
+              padding: "20px",
+              borderRadius: "15px",
+              marginBottom: "25px"
+            }}
+          >
+
+            <h3>
+              Yesterday Working Hours:
+              {
+                attendance[1]?.workingHours || " 0 hrs"
+              }
+            </h3>
+
+            <br />
+
+
+
+            {/* TODAY STATUS */}
+            <select
+              value={todayStatus}
+              onChange={(e) =>
+                setTodayStatus(e.target.value)
+              }
+              style={{
+                padding: "12px",
+                marginRight: "10px",
+                borderRadius: "10px",
+                width: "220px"
+              }}
+            >
+
+              <option value="">
+                Select Today Status
+              </option>
+
+              <option>
+                Office Work
+              </option>
+
+              <option>
+                Work From Home
+              </option>
+
+              <option>
+                Client Meeting
+              </option>
+
+              <option>
+                Field Work
+              </option>
+
+            </select>
+
+
+
+
+            {/* FEELING */}
+            <select
+              value={feeling}
+              onChange={(e) =>
+                setFeeling(e.target.value)
+              }
+              style={{
+                padding: "12px",
+                borderRadius: "10px",
+                width: "220px"
+              }}
+            >
+
+              <option value="">
+                Today Feeling
+              </option>
+
+              <option>
+                Happy 😊
+              </option>
+
+              <option>
+                Normal 🙂
+              </option>
+
+              <option>
+                Sad 😔
+              </option>
+
+              <option>
+                Tired 😴
+              </option>
+
+            </select>
+
+
+
+            <br />
+            <br />
+
+
 
             <button
               onClick={handleClockIn}
               style={{
                 padding: "12px 22px",
-                marginRight: "10px",
                 background: "#10b981",
                 border: "none",
                 color: "white",
@@ -221,40 +338,49 @@ export default function Dashboard() {
                 fontWeight: "bold"
               }}
             >
-              Clock In
+              Start Day
             </button>
 
-          )
+          </div>
 
-        }
+        )
+
+      }
 
 
-        {
 
-          currentWorking && (
 
-            <button
-              onClick={() =>
-                handleClockOut(currentWorking.id)
-              }
-              style={{
-                padding: "12px 22px",
-                background: "#3b82f6",
-                border: "none",
-                color: "white",
-                borderRadius: "10px",
-                cursor: "pointer",
-                fontWeight: "bold"
-              }}
-            >
-              Clock Out
-            </button>
 
-          )
 
-        }
 
-      </div>
+      {/* CLOCK OUT BUTTON */}
+      {
+
+        currentWorking && (
+
+          <button
+            onClick={() =>
+              handleClockOut(currentWorking.id)
+            }
+            style={{
+              padding: "12px 22px",
+              background: "#3b82f6",
+              border: "none",
+              color: "white",
+              borderRadius: "10px",
+              cursor: "pointer",
+              fontWeight: "bold",
+              marginBottom: "20px"
+            }}
+          >
+            Clock Out
+          </button>
+
+        )
+
+      }
+
+
 
 
 
@@ -284,6 +410,10 @@ export default function Dashboard() {
 
             <th>Date</th>
 
+            <th>Today Status</th>
+
+            <th>Feeling</th>
+
             <th>Clock In</th>
 
             <th>Clock Out</th>
@@ -298,6 +428,8 @@ export default function Dashboard() {
 
 
 
+
+
         <tbody>
 
           {
@@ -306,16 +438,18 @@ export default function Dashboard() {
 
               <tr key={item.id}>
 
-
                 <td>{item.date}</td>
 
+                <td>{item.todayStatus}</td>
+
+                <td>{item.feeling}</td>
 
                 <td>{item.clockIn}</td>
-
 
                 <td>
                   {item.clockOut || "-"}
                 </td>
+
 
 
 
@@ -351,12 +485,12 @@ export default function Dashboard() {
 
 
 
+
                 <td>
 
                   {item.workingHours || "-"}
 
                 </td>
-
 
               </tr>
 

@@ -1,61 +1,70 @@
-router.post('/clock-out', (req, res) => {
+router.post('/clock-in', (req, res) => {
 
-  const { attendanceId } = req.body;
+  const {
+    userId,
+    userName,
+    todayStatus,
+    feeling
+  } = req.body;
 
   const records = JSON.parse(
     fs.readFileSync(ATTENDANCE_FILE)
   );
 
-  const updatedRecords = records.map(record => {
 
-    if (record.id === attendanceId) {
 
-      const clockOutTime =
-        new Date();
-
-      record.clockOut =
-        clockOutTime.toLocaleTimeString();
-
-      const clockInTime = new Date(
-        `${record.date} ${record.clockIn}`
-      );
-
-      const diffMs =
-        clockOutTime - clockInTime;
-
-      const workingHours =
-        (diffMs / (1000 * 60 * 60))
-        .toFixed(2);
-
-      record.workingHours =
-        `${workingHours} hrs`;
+  const alreadyWorking = records.find(
+    item =>
+      item.userId === userId &&
+      item.status === "Working"
+  );
 
 
 
-      if (workingHours >= 8) {
+  if (alreadyWorking) {
 
-        record.status = 'Completed';
+    return res.json({
+      message: "Already Clocked In"
+    });
+  }
 
-      } else if (workingHours >= 4) {
 
-        record.status = 'Half Day';
 
-      } else {
+  const attendance = {
 
-        record.status = 'Not Working';
-      }
+    id: Date.now().toString(),
 
-    }
+    userId,
 
-    return record;
-  });
+    userName,
+
+    todayStatus,
+
+    feeling,
+
+    date: new Date().toLocaleDateString(),
+
+    clockIn: new Date().toLocaleTimeString(),
+
+    clockOut: '',
+
+    workingHours: '',
+
+    status: 'Working'
+  };
+
+
+
+  records.push(attendance);
+
+
 
   fs.writeFileSync(
     ATTENDANCE_FILE,
-    JSON.stringify(updatedRecords, null, 2)
+    JSON.stringify(records, null, 2)
   );
 
-  res.json({
-    message: 'Clocked Out'
-  });
+
+
+  res.json(attendance);
 });
