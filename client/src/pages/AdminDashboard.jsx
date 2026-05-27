@@ -28,7 +28,7 @@ export default function AdminDashboard() {
     try {
 
       const res = await axios.get(
-        'http://localhost:5000/api/attendance/all'
+        'https://attendance-backend-32mo.onrender.com/api/attendance/all'
       );
 
       setRecords(res.data);

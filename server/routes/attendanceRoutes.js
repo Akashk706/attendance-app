@@ -6,6 +6,8 @@ const router = express.Router();
 const ATTENDANCE_FILE =
   './data/attendance.json';
 
+
+// CLOCK IN
 router.post('/clock-in', (req, res) => {
 
   const { userId, userName } = req.body;
@@ -21,6 +23,7 @@ router.post('/clock-in', (req, res) => {
     date: new Date().toLocaleDateString(),
     clockIn: new Date().toLocaleTimeString(),
     clockOut: '',
+    workingHours: '',
     status: 'Working'
   };
 
@@ -34,6 +37,8 @@ router.post('/clock-in', (req, res) => {
   res.json(attendance);
 });
 
+
+// CLOCK OUT
 router.post('/clock-out', (req, res) => {
 
   const { attendanceId } = req.body;
@@ -45,8 +50,29 @@ router.post('/clock-out', (req, res) => {
   const updatedRecords = records.map(record => {
 
     if (record.id === attendanceId) {
+
+      const clockOutTime =
+        new Date();
+
       record.clockOut =
-        new Date().toLocaleTimeString();
+        clockOutTime.toLocaleTimeString();
+
+      // Calculate Working Hours
+      const clockInTime = new Date(
+        `${record.date} ${record.clockIn}`
+      );
+
+      const diffMs =
+        clockOutTime - clockInTime;
+
+      const workingHours =
+        (diffMs / (1000 * 60 * 60))
+        .toFixed(2);
+
+      record.workingHours =
+        `${workingHours} hrs`;
+
+      record.status = 'Completed';
     }
 
     return record;
@@ -62,6 +88,8 @@ router.post('/clock-out', (req, res) => {
   });
 });
 
+
+// UPDATE STATUS
 router.post('/update-status', (req, res) => {
 
   const { attendanceId, status } = req.body;
@@ -89,6 +117,8 @@ router.post('/update-status', (req, res) => {
   });
 });
 
+
+// GET ALL RECORDS
 router.get('/all', (req, res) => {
 
   const records = JSON.parse(
