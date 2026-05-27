@@ -1,14 +1,29 @@
 import {
   BrowserRouter,
   Routes,
-  Route
-} from 'react-router-dom';
+  Route,
+  Navigate
+} from "react-router-dom";
 
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import AdminDashboard from './pages/AdminDashboard';
+import Login from "./pages/Login";
 
-function App() {
+import Dashboard from "./pages/Dashboard";
+
+import AdminDashboard from "./pages/AdminDashboard";
+
+import AdminLogin from "./pages/AdminLogin";
+
+export default function App() {
+
+  const user =
+    localStorage.getItem("user");
+
+  const admin =
+    localStorage.getItem("admin");
+
+
+
+
 
   return (
 
@@ -16,19 +31,56 @@ function App() {
 
       <Routes>
 
+
+
+
+
+        {/* EMPLOYEE LOGIN */}
         <Route
           path="/"
           element={<Login />}
         />
 
+
+
+
+
+        {/* EMPLOYEE DASHBOARD */}
         <Route
           path="/dashboard"
-          element={<Dashboard />}
+          element={
+            user
+            ? <Dashboard />
+            : <Navigate to="/" />
+          }
         />
 
+
+
+
+
+
+
+        {/* ADMIN LOGIN */}
+        <Route
+          path="/admin-login"
+          element={<AdminLogin />}
+        />
+
+
+
+
+
+
+
+        {/* ADMIN DASHBOARD */}
         <Route
           path="/admin"
-          element={<AdminDashboard />}
+          element={
+            admin
+            ? <AdminDashboard />
+            : <Navigate to="/admin-login" />
+          }
         />
 
       </Routes>
@@ -36,5 +88,3 @@ function App() {
     </BrowserRouter>
   );
 }
-
-export default App;

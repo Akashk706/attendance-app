@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+
 import axios from "axios";
 
 export default function AdminDashboard() {
@@ -12,8 +13,12 @@ export default function AdminDashboard() {
   const [statusFilter, setStatusFilter] =
     useState("All");
 
+
+
   const BACKEND_URL =
     "https://attendance-backend-32mo.onrender.com";
+
+
 
 
 
@@ -33,6 +38,8 @@ export default function AdminDashboard() {
 
 
 
+
+
   useEffect(() => {
 
     fetchAttendance();
@@ -46,6 +53,24 @@ export default function AdminDashboard() {
     return () => clearInterval(interval);
 
   }, []);
+
+
+
+
+
+
+
+
+  // LOGOUT
+  const handleLogout = () => {
+
+    localStorage.removeItem("admin");
+
+    window.location.href =
+      "/admin-login";
+  };
+
+
 
 
 
@@ -90,6 +115,29 @@ export default function AdminDashboard() {
 
 
 
+
+  // ANALYTICS
+  const totalRecords =
+    records.length;
+
+  const workingEmployees =
+    records.filter(
+      item => item.status === "Working"
+    ).length;
+
+  const breakEmployees =
+    records.filter(
+      item => item.status === "Break"
+    ).length;
+
+
+
+
+
+
+
+
+
   return (
 
     <div
@@ -101,11 +149,136 @@ export default function AdminDashboard() {
       }}
     >
 
-      <h1>
-        Admin Dashboard
-      </h1>
 
-      <br />
+
+
+
+
+
+
+      {/* HEADER */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent:
+            "space-between",
+          alignItems: "center",
+          marginBottom: "30px"
+        }}
+      >
+
+        <div>
+
+          <h1>
+            Admin Dashboard
+          </h1>
+
+          <p>
+            Employee Monitoring Panel
+          </p>
+
+        </div>
+
+
+
+
+
+
+
+        {/* LOGOUT BUTTON */}
+        <button
+          onClick={handleLogout}
+          style={{
+            padding: "12px 20px",
+            background: "#ef4444",
+            color: "white",
+            border: "none",
+            borderRadius: "10px",
+            cursor: "pointer"
+          }}
+        >
+          Logout
+        </button>
+
+      </div>
+
+
+
+
+
+
+
+
+
+
+
+
+      {/* ANALYTICS CARDS */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns:
+            "repeat(auto-fit,minmax(220px,1fr))",
+          gap: "20px",
+          marginBottom: "30px"
+        }}
+      >
+
+        <div style={cardStyle}>
+
+          <h2>
+            {totalRecords}
+          </h2>
+
+          <p>
+            Total Records
+          </p>
+
+        </div>
+
+
+
+
+
+
+
+        <div style={cardStyle}>
+
+          <h2>
+            {workingEmployees}
+          </h2>
+
+          <p>
+            Working Employees
+          </p>
+
+        </div>
+
+
+
+
+
+
+
+        <div style={cardStyle}>
+
+          <h2>
+            {breakEmployees}
+          </h2>
+
+          <p>
+            On Break
+          </p>
+
+        </div>
+
+      </div>
+
+
+
+
+
+
 
 
 
@@ -122,6 +295,10 @@ export default function AdminDashboard() {
           flexWrap: "wrap"
         }}
       >
+
+
+
+
 
 
 
@@ -148,6 +325,9 @@ export default function AdminDashboard() {
 
 
 
+
+
+
         {/* STATUS FILTER */}
         <select
           value={statusFilter}
@@ -158,7 +338,7 @@ export default function AdminDashboard() {
           }
           style={{
             padding: "12px",
-            width: "200px",
+            width: "220px",
             borderRadius: "10px",
             border: "none"
           }}
@@ -196,60 +376,48 @@ export default function AdminDashboard() {
 
 
 
+
+
+
       {/* TABLE */}
-      <table
-        border="1"
-        width="100%"
-        cellPadding="10"
+      <div
         style={{
-          background: "white",
-          color: "black",
-          borderCollapse: "collapse"
+          background: "#1e293b",
+          padding: "20px",
+          borderRadius: "15px"
         }}
       >
 
-        <thead>
+        <table
+          border="1"
+          width="100%"
+          cellPadding="10"
+          style={{
+            background: "white",
+            color: "black",
+            borderCollapse: "collapse"
+          }}
+        >
 
-          <tr>
+          <thead>
 
-            <th>Name</th>
+            <tr>
 
-            <th>Date</th>
+              <th>Name</th>
 
-            <th>Status</th>
+              <th>Date</th>
 
-            <th>Clock In</th>
+              <th>Clock In</th>
 
-            <th>Clock Out</th>
+              <th>Clock Out</th>
 
-            <th>Working Hours</th>
+              <th>Status</th>
 
-          </tr>
+              <th>Total Hours</th>
 
-        </thead>
+            </tr>
 
-
-
-
-
-
-
-
-        <tbody>
-
-          {
-
-            filteredRecords.map(item => (
-
-              <tr key={item.id}>
-
-                <td>
-                  {item.userName || "Unknown"}
-                </td>
-
-                <td>
-                  {item.date}
-                </td>
+          </thead>
 
 
 
@@ -257,38 +425,32 @@ export default function AdminDashboard() {
 
 
 
-                <td>
 
-                  <span
-                    style={{
-                      padding:
-                        "6px 12px",
 
-                      borderRadius:
-                        "20px",
 
-                      color: "white",
+          <tbody>
 
-                      background:
+            {
 
-                        item.status === "Working"
-                        ? "#f59e0b"
+              filteredRecords.map(item => (
 
-                        : item.status === "Break"
-                        ? "#3b82f6"
+                <tr key={item.id}>
 
-                        : item.status === "Completed"
-                        ? "#10b981"
+                  <td>
+                    {item.userName || "Unknown"}
+                  </td>
 
-                        : "#ef4444"
-                    }}
-                  >
+                  <td>
+                    {item.date}
+                  </td>
 
-                    {item.status}
+                  <td>
+                    {item.clockIn}
+                  </td>
 
-                  </span>
-
-                </td>
+                  <td>
+                    {item.clockOut || "-"}
+                  </td>
 
 
 
@@ -296,28 +458,88 @@ export default function AdminDashboard() {
 
 
 
-                <td>
-                  {item.clockIn}
-                </td>
 
-                <td>
-                  {item.clockOut || "-"}
-                </td>
 
-                <td>
-                  {item.workingHours || "0"}
-                </td>
 
-              </tr>
+                  <td>
 
-            ))
+                    <span
+                      style={{
+                        padding:
+                          "6px 14px",
 
-          }
+                        borderRadius:
+                          "20px",
 
-        </tbody>
+                        color: "white",
 
-      </table>
+                        background:
+
+                          item.status === "Working"
+                          ? "#f59e0b"
+
+                          : item.status === "Break"
+                          ? "#3b82f6"
+
+                          : item.status === "Completed"
+                          ? "#10b981"
+
+                          : "#ef4444"
+                      }}
+                    >
+
+                      {item.status}
+
+                    </span>
+
+                  </td>
+
+
+
+
+
+
+
+
+
+
+                  <td>
+                    {item.workingHours || "0"}
+                  </td>
+
+                </tr>
+
+              ))
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
 
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+// CARD STYLE
+const cardStyle = {
+
+  background: "#1e293b",
+
+  padding: "20px",
+
+  borderRadius: "15px",
+
+  textAlign: "center"
+};
