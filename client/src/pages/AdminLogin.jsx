@@ -1,35 +1,30 @@
 import { useState } from "react";
-
 import { useNavigate } from "react-router-dom";
 
 export default function AdminLogin() {
 
   const navigate = useNavigate();
 
-  const [email, setEmail] =
-    useState("");
+  const [email, setEmail] = useState("");
 
   const [password, setPassword] =
     useState("");
-
-
-
-
 
   const handleLogin = (e) => {
 
     e.preventDefault();
 
-
-
+    // ADMIN LOGIN
 
     if (
 
-      email === "akashk@damcogroup.com"
+      email.trim() ===
+        "akashk@damcogroup.com"
 
       &&
 
-      password === "Akash@#123"
+      password.trim() ===
+        "Akash@123"
 
     ) {
 
@@ -40,32 +35,22 @@ export default function AdminLogin() {
 
       navigate("/admin");
 
-    }
+    } else {
 
-    else {
-
-      alert(
-        "Invalid Credentials"
-      );
+      alert("Invalid Credentials");
     }
   };
-
-
-
-
-
-
-
 
   return (
 
     <div
       style={{
-        background: "#0f172a",
         minHeight: "100vh",
         display: "flex",
         justifyContent: "center",
-        alignItems: "center"
+        alignItems: "center",
+        background:
+          "#020617"
       }}
     >
 
@@ -74,22 +59,20 @@ export default function AdminLogin() {
         style={{
           background: "#1e293b",
           padding: "40px",
-          borderRadius: "15px",
-          width: "350px",
-          color: "white"
+          borderRadius: "20px",
+          width: "400px"
         }}
       >
 
-        <h1>
+        <h1
+          style={{
+            color: "white",
+            textAlign: "center",
+            marginBottom: "30px"
+          }}
+        >
           Admin Login
         </h1>
-
-        <br />
-
-
-
-
-
 
         <input
           type="email"
@@ -98,13 +81,14 @@ export default function AdminLogin() {
           onChange={(e) =>
             setEmail(e.target.value)
           }
-          style={inputStyle}
+          style={{
+            width: "100%",
+            padding: "14px",
+            marginBottom: "20px",
+            borderRadius: "10px",
+            border: "none"
+          }}
         />
-
-
-
-
-
 
         <input
           type="password"
@@ -113,18 +97,27 @@ export default function AdminLogin() {
           onChange={(e) =>
             setPassword(e.target.value)
           }
-          style={inputStyle}
+          style={{
+            width: "100%",
+            padding: "14px",
+            marginBottom: "20px",
+            borderRadius: "10px",
+            border: "none"
+          }}
         />
-
-
-
-
-
-
 
         <button
           type="submit"
-          style={buttonStyle}
+          style={{
+            width: "100%",
+            padding: "14px",
+            background: "#10b981",
+            color: "white",
+            border: "none",
+            borderRadius: "10px",
+            fontSize: "16px",
+            cursor: "pointer"
+          }}
         >
           Login
         </button>
@@ -134,42 +127,3 @@ export default function AdminLogin() {
     </div>
   );
 }
-
-
-
-
-
-
-const inputStyle = {
-
-  width: "100%",
-
-  padding: "12px",
-
-  marginBottom: "15px",
-
-  borderRadius: "10px",
-
-  border: "none"
-};
-
-
-
-
-
-const buttonStyle = {
-
-  width: "100%",
-
-  padding: "12px",
-
-  background: "#10b981",
-
-  color: "white",
-
-  border: "none",
-
-  borderRadius: "10px",
-
-  cursor: "pointer"
-};
