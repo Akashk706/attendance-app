@@ -1,174 +1,246 @@
-import axios from 'axios';
-import { useState } from 'react';
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 export default function Dashboard() {
 
+  const [attendance, setAttendance] = useState([]);
+
   const user = JSON.parse(
-    localStorage.getItem('user')
+    localStorage.getItem("user")
   );
 
-  const [attendanceId, setAttendanceId] =
-    useState('');
+  const BACKEND_URL =
+    "https://attendance-backend-32mo.onrender.com";
 
-  const [status, setStatus] =
-    useState('Working');
+  // FETCH ATTENDANCE
+  const fetchAttendance = async () => {
 
+    const res = await axios.get(
+      `${BACKEND_URL}/api/attendance/all`
+    );
+
+    const userAttendance =
+      res.data.filter(
+        item => item.userId === user.id
+      );
+
+    setAttendance(userAttendance.reverse());
+  };
+
+  useEffect(() => {
+    fetchAttendance();
+  }, []);
+
+
+  // CLOCK IN
   const handleClockIn = async () => {
 
-    try {
+    await axios.post(
+      `${BACKEND_URL}/api/attendance/clock-in`,
+      {
+        userId: user.id,
+        userName: user.name
+      }
+    );
 
-      const res = await axios.post(
-        'https://attendance-backend-32mo.onrender.com/api/attendance/clock-in',
-        {
-          userId: user.id,
-userName: user.name
-        }
-      );
-
-      setAttendanceId(res.data.id);
-
-      alert('Clocked In');
-
-    } catch (error) {
-
-      alert('Clock In Failed');
-
-    }
+    fetchAttendance();
   };
 
-  const handleClockOut = async () => {
 
-    try {
+  // CLOCK OUT
+  const handleClockOut = async (attendanceId) => {
 
-      await axios.post(
-        'https://attendance-backend-32mo.onrender.com/api/attendance/clock-out',
-        {
-          attendanceId
-        }
-      );
+    await axios.post(
+      `${BACKEND_URL}/api/attendance/clock-out`,
+      {
+        attendanceId
+      }
+    );
 
-      alert('Clocked Out');
-
-    } catch (error) {
-
-      alert('Clock Out Failed');
-
-    }
+    fetchAttendance();
   };
 
-  const updateStatus = async () => {
 
-    try {
+  // LOGOUT
+  const handleLogout = () => {
 
-      await axios.post(
-        'http://localhost:5000/api/attendance/update-status',
-        {
-          attendanceId,
-          status
-        }
-      );
+    localStorage.removeItem("user");
 
-      alert('Status Updated');
-
-    } catch (error) {
-
-      alert('Update Failed');
-
-    }
+    window.location.href = "/";
   };
+
 
   return (
-
     <div
       style={{
-        padding: '40px',
-        fontFamily: 'Arial'
+        padding: "30px",
+        background: "#111827",
+        minHeight: "100vh",
+        color: "white"
       }}
     >
 
-      <h1>
-        Welcome {user?.name}
-      </h1>
-
-      <h2>
-        Attendance Dashboard
-      </h2>
-
+      {/* HEADER */}
       <div
         style={{
-          marginTop: '30px'
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "30px"
+        }}
+      >
+
+        <div>
+          <h1>
+            Welcome {user?.name}
+          </h1>
+
+          <p>
+            Employee Attendance Dashboard
+          </p>
+        </div>
+
+        <button
+          onClick={handleLogout}
+          style={{
+            padding: "10px 20px",
+            background: "red",
+            border: "none",
+            color: "white",
+            borderRadius: "8px",
+            cursor: "pointer"
+          }}
+        >
+          Logout
+        </button>
+
+      </div>
+
+
+      {/* STATUS */}
+      <div
+        style={{
+          background: "#1f2937",
+          padding: "20px",
+          borderRadius: "10px",
+          marginBottom: "20px"
+        }}
+      >
+
+        <h2>
+          Today's Status:
+          {
+            attendance.length > 0
+            ? attendance[0].status
+            : " Not Marked"
+          }
+        </h2>
+
+      </div>
+
+
+      {/* BUTTONS */}
+      <div
+        style={{
+          marginBottom: "20px"
         }}
       >
 
         <button
           onClick={handleClockIn}
-          style={buttonStyle}
+          style={{
+            padding: "12px 20px",
+            marginRight: "10px",
+            background: "#10b981",
+            border: "none",
+            color: "white",
+            borderRadius: "8px",
+            cursor: "pointer"
+          }}
         >
           Clock In
         </button>
 
-        <button
-          onClick={handleClockOut}
-          style={buttonStyle}
-        >
-          Clock Out
-        </button>
-
       </div>
 
-      <div
+
+      {/* TABLE */}
+      <table
+        border="1"
+        cellPadding="10"
+        width="100%"
         style={{
-          marginTop: '20px'
+          background: "white",
+          color: "black",
+          borderCollapse: "collapse"
         }}
       >
 
-        <select
-          value={status}
-          onChange={(e) =>
-            setStatus(e.target.value)
+        <thead>
+
+          <tr>
+            <th>Date</th>
+            <th>Clock In</th>
+            <th>Clock Out</th>
+            <th>Status</th>
+            <th>Working Hours</th>
+            <th>Action</th>
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          {
+            attendance.map((item) => (
+
+              <tr key={item.id}>
+
+                <td>{item.date}</td>
+
+                <td>{item.clockIn}</td>
+
+                <td>{item.clockOut || "-"}</td>
+
+                <td>{item.status}</td>
+
+                <td>{item.workingHours || "-"}</td>
+
+                <td>
+
+                  {
+                    !item.clockOut && (
+
+                      <button
+                        onClick={() =>
+                          handleClockOut(item.id)
+                        }
+                        style={{
+                          padding: "8px 15px",
+                          background: "#3b82f6",
+                          border: "none",
+                          color: "white",
+                          borderRadius: "6px",
+                          cursor: "pointer"
+                        }}
+                      >
+                        Clock Out
+                      </button>
+
+                    )
+                  }
+
+                </td>
+
+              </tr>
+
+            ))
           }
-          style={{
-            padding: '10px',
-            marginRight: '10px'
-          }}
-        >
 
-          <option>
-            Working
-          </option>
+        </tbody>
 
-          <option>
-            Break
-          </option>
-
-          <option>
-            Meeting
-          </option>
-
-          <option>
-            Offline
-          </option>
-
-        </select>
-
-        <button
-          onClick={updateStatus}
-          style={buttonStyle}
-        >
-          Update Status
-        </button>
-
-      </div>
+      </table>
 
     </div>
   );
 }
-
-const buttonStyle = {
-  padding: '10px 20px',
-  marginRight: '10px',
-  background: 'black',
-  color: 'white',
-  border: 'none',
-  cursor: 'pointer'
-};
