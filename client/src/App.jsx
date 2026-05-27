@@ -6,11 +6,8 @@ import {
 } from "react-router-dom";
 
 import Login from "./pages/Login";
-
 import Dashboard from "./pages/Dashboard";
-
 import AdminDashboard from "./pages/AdminDashboard";
-
 import AdminLogin from "./pages/AdminLogin";
 
 export default function App() {
@@ -21,31 +18,19 @@ export default function App() {
   const admin =
     localStorage.getItem("admin");
 
-
-
-
-
   return (
 
     <BrowserRouter>
 
       <Routes>
 
-
-
-
-
-        {/* EMPLOYEE LOGIN */}
+        {/* USER LOGIN */}
         <Route
           path="/"
           element={<Login />}
         />
 
-
-
-
-
-        {/* EMPLOYEE DASHBOARD */}
+        {/* USER DASHBOARD */}
         <Route
           path="/dashboard"
           element={
@@ -55,23 +40,11 @@ export default function App() {
           }
         />
 
-
-
-
-
-
-
         {/* ADMIN LOGIN */}
         <Route
           path="/admin-login"
           element={<AdminLogin />}
         />
-
-
-
-
-
-
 
         {/* ADMIN DASHBOARD */}
         <Route

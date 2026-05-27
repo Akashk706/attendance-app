@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import { useNavigate } from "react-router-dom";
 
 export default function AdminLogin() {
@@ -15,7 +16,6 @@ export default function AdminLogin() {
 
 
 
-
   const handleLogin = (e) => {
 
     e.preventDefault();
@@ -23,10 +23,11 @@ export default function AdminLogin() {
 
 
 
-    // ADMIN LOGIN
     if (
 
-      email === "admin@gmail.com" &&
+      email === "admin@gmail.com"
+
+      &&
 
       password === "admin123"
 
@@ -44,7 +45,7 @@ export default function AdminLogin() {
     else {
 
       alert(
-        "Invalid Admin Credentials"
+        "Invalid Credentials"
       );
     }
   };
@@ -120,6 +121,7 @@ export default function AdminLogin() {
 
 
 
+
         <button
           type="submit"
           style={buttonStyle}
@@ -150,6 +152,7 @@ const inputStyle = {
 
   border: "none"
 };
+
 
 
 
