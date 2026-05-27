@@ -25,11 +25,11 @@ export default function AdminLogin() {
 
     if (
 
-      email === "admin@gmail.com"
+      email === "akashk@damcogroup.com"
 
       &&
 
-      password === "admin123"
+      password === "Akash@#123"
 
     ) {
 
