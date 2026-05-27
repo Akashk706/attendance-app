@@ -1,10 +1,12 @@
 const express = require('express');
+
 const fs = require('fs');
 
 const router = express.Router();
 
 const ATTENDANCE_FILE =
   './data/attendance.json';
+
 
 
 
@@ -22,31 +24,71 @@ router.post('/clock-in', (req, res) => {
 
 
 
+
+
   const records = JSON.parse(
+
     fs.readFileSync(ATTENDANCE_FILE)
+
   );
 
 
 
-  // CHECK IF ALREADY WORKING
+
+
+
+  // CHECK IF USER ALREADY WORKING
   const alreadyWorking = records.find(
+
     item =>
+
       item.userId === userId &&
+
       item.status === "Working"
+
   );
+
+
 
 
 
   if (alreadyWorking) {
 
     return res.json({
+
       message: "Already Clocked In"
+
     });
+
   }
 
 
 
-  const currentTime = new Date();
+
+
+
+
+  // INDIA TIME
+  const currentTime = new Date(
+
+    new Date().toLocaleString(
+
+      "en-US",
+
+      {
+
+        timeZone: "Asia/Kolkata"
+
+      }
+
+    )
+
+  );
+
+
+
+
+
 
 
 
@@ -62,22 +104,41 @@ router.post('/clock-in', (req, res) => {
 
     feeling,
 
-    date: currentTime.toLocaleDateString(),
+
+
+    date:
+      currentTime.toLocaleDateString(),
+
+
 
     clockIn:
       currentTime.toLocaleTimeString(),
 
+
+
     clockInTimestamp:
       currentTime.getTime(),
 
+
+
     clockOut: '',
+
+
 
     clockOutTimestamp: '',
 
+
+
     workingHours: '',
+
+
 
     status: 'Working'
   };
+
+
+
+
 
 
 
@@ -85,16 +146,34 @@ router.post('/clock-in', (req, res) => {
 
 
 
+
+
+
+
+
   fs.writeFileSync(
+
     ATTENDANCE_FILE,
+
     JSON.stringify(records, null, 2)
+
   );
+
+
+
+
+
 
 
 
   res.json(attendance);
 
 });
+
+
+
+
+
 
 
 
@@ -109,32 +188,77 @@ router.post('/clock-out', (req, res) => {
 
 
 
+
+
+
+
   const records = JSON.parse(
+
     fs.readFileSync(ATTENDANCE_FILE)
+
   );
+
+
+
+
+
 
 
 
   const updatedRecords = records.map(record => {
 
+
+
+
     if (record.id === attendanceId) {
 
-      const currentTime = new Date();
+
+
+
+      // INDIA TIME
+      const currentTime = new Date(
+
+        new Date().toLocaleString(
+
+          "en-US",
+
+          {
+
+            timeZone: "Asia/Kolkata"
+
+          }
+
+        )
+
+      );
+
+
+
+
 
 
 
       record.clockOut =
+
         currentTime.toLocaleTimeString();
 
 
 
+
+
+
       record.clockOutTimestamp =
+
         currentTime.getTime();
 
 
 
 
-      // CALCULATE WORKING HOURS
+
+
+
+
+      // WORKING HOURS
       const diffMs =
 
         record.clockOutTimestamp -
@@ -144,16 +268,34 @@ router.post('/clock-out', (req, res) => {
 
 
 
+
+
+
+
       const workingHours =
 
-        (diffMs / (1000 * 60 * 60))
-        .toFixed(2);
+        (
+
+          diffMs /
+
+          (1000 * 60 * 60)
+
+        ).toFixed(2);
+
+
+
+
 
 
 
 
       record.workingHours =
+
         `${workingHours} hrs`;
+
+
+
+
 
 
 
@@ -164,16 +306,26 @@ router.post('/clock-out', (req, res) => {
 
         record.status = 'Completed';
 
-      } else if (workingHours >= 4) {
+      }
+
+      else if (workingHours >= 4) {
 
         record.status = 'Half Day';
 
-      } else {
+      }
+
+      else {
 
         record.status = 'Not Working';
+
       }
 
     }
+
+
+
+
+
 
     return record;
 
@@ -182,19 +334,38 @@ router.post('/clock-out', (req, res) => {
 
 
 
+
+
+
+
+
   fs.writeFileSync(
+
     ATTENDANCE_FILE,
+
     JSON.stringify(updatedRecords, null, 2)
+
   );
 
 
 
 
+
+
+
+
+
   res.json({
+
     message: 'Clocked Out'
+
   });
 
 });
+
+
+
+
 
 
 
@@ -207,44 +378,85 @@ router.post('/clock-out', (req, res) => {
 router.post('/update-status', (req, res) => {
 
   const {
+
     attendanceId,
+
     status
+
   } = req.body;
 
 
 
+
+
+
+
   const records = JSON.parse(
+
     fs.readFileSync(ATTENDANCE_FILE)
+
   );
+
+
+
+
+
 
 
 
   const updatedRecords = records.map(record => {
 
+
+
+
     if (record.id === attendanceId) {
 
       record.status = status;
+
     }
 
+
+
+
+
+
     return record;
+
   });
+
+
+
+
 
 
 
 
   fs.writeFileSync(
+
     ATTENDANCE_FILE,
+
     JSON.stringify(updatedRecords, null, 2)
+
   );
 
 
 
 
+
+
+
+
   res.json({
+
     message: 'Status Updated'
+
   });
 
 });
+
+
+
+
 
 
 
@@ -257,12 +469,19 @@ router.post('/update-status', (req, res) => {
 router.get('/all', (req, res) => {
 
   const records = JSON.parse(
+
     fs.readFileSync(ATTENDANCE_FILE)
+
   );
+
+
 
   res.json(records);
 
 });
+
+
+
 
 
 
