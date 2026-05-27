@@ -21,6 +21,15 @@ export default function AdminDashboard() {
   const [filterStatus, setFilterStatus] =
     useState("All");
 
+  const [workType, setWorkType] =
+    useState("All");
+
+  const [feelingFilter, setFeelingFilter] =
+    useState("All");
+
+  const [selectedDate, setSelectedDate] =
+    useState("");
+
 
 
   const BACKEND_URL =
@@ -31,7 +40,7 @@ export default function AdminDashboard() {
 
 
 
-  // FETCH DATA
+  // FETCH ATTENDANCE
   const fetchAttendance = async () => {
 
     const res = await axios.get(
@@ -51,7 +60,9 @@ export default function AdminDashboard() {
     fetchAttendance();
 
     const interval = setInterval(() => {
+
       fetchAttendance();
+
     }, 3000);
 
     return () => clearInterval(interval);
@@ -65,7 +76,7 @@ export default function AdminDashboard() {
 
 
 
-  // FILTERED DATA
+  // FILTERS
   const filteredRecords =
     records.filter(item => {
 
@@ -88,11 +99,55 @@ export default function AdminDashboard() {
 
 
 
+      const workTypeMatch =
+
+        workType === "All"
+
+        ? true
+
+        : item.todayStatus === workType;
+
+
+
+      const feelingMatch =
+
+        feelingFilter === "All"
+
+        ? true
+
+        : item.feeling === feelingFilter;
+
+
+
+      const dateMatch =
+
+        selectedDate === ""
+
+        ? true
+
+        : item.date ===
+          new Date(selectedDate)
+          .toLocaleDateString();
+
+
+
+
       return (
+
         nameMatch &&
-        statusMatch
+
+        statusMatch &&
+
+        workTypeMatch &&
+
+        feelingMatch &&
+
+        dateMatch
+
       );
+
     });
+
 
 
 
@@ -134,6 +189,7 @@ export default function AdminDashboard() {
 
 
 
+
   // PIE CHART DATA
   const chartData = [
 
@@ -157,9 +213,13 @@ export default function AdminDashboard() {
 
 
   const COLORS = [
+
     "#f59e0b",
+
     "#3b82f6",
+
     "#10b981"
+
   ];
 
 
@@ -179,6 +239,7 @@ export default function AdminDashboard() {
         padding: "30px"
       }}
     >
+
 
 
 
@@ -217,6 +278,8 @@ export default function AdminDashboard() {
 
 
 
+
+
       {/* CARDS */}
       <div
         style={{
@@ -237,6 +300,8 @@ export default function AdminDashboard() {
 
 
 
+
+
         <div style={cardStyle}>
           <h2>
             {workingEmployees}
@@ -246,12 +311,16 @@ export default function AdminDashboard() {
 
 
 
+
+
         <div style={cardStyle}>
           <h2>
             {breakEmployees}
           </h2>
           <p>On Break</p>
         </div>
+
+
 
 
 
@@ -272,15 +341,23 @@ export default function AdminDashboard() {
 
 
 
-      {/* SEARCH + FILTER */}
+
+
+      {/* FILTERS */}
       <div
         style={{
-          display: "flex",
+          display: "grid",
+          gridTemplateColumns:
+            "repeat(auto-fit,minmax(220px,1fr))",
           gap: "15px",
           marginBottom: "30px"
         }}
       >
 
+
+
+
+        {/* SEARCH */}
         <input
           type="text"
           placeholder="Search Employee"
@@ -294,6 +371,10 @@ export default function AdminDashboard() {
 
 
 
+
+
+
+        {/* STATUS */}
         <select
           value={filterStatus}
           onChange={(e) =>
@@ -304,29 +385,129 @@ export default function AdminDashboard() {
           style={inputStyle}
         >
 
-          <option>
-            All
+          <option value="All">
+            All Status
           </option>
 
-          <option>
+          <option value="Working">
             Working
           </option>
 
-          <option>
+          <option value="Break">
             Break
           </option>
 
-          <option>
+          <option value="Completed">
             Completed
           </option>
 
-          <option>
+          <option value="Half Day">
             Half Day
+          </option>
+
+          <option value="Not Working">
+            Not Working
           </option>
 
         </select>
 
+
+
+
+
+
+
+
+        {/* WORK TYPE */}
+        <select
+          value={workType}
+          onChange={(e) =>
+            setWorkType(
+              e.target.value
+            )
+          }
+          style={inputStyle}
+        >
+
+          <option value="All">
+            All Work Types
+          </option>
+
+          <option value="Office Work">
+            Office Work
+          </option>
+
+          <option value="Work From Home">
+            Work From Home
+          </option>
+
+          <option value="Client Meeting">
+            Client Meeting
+          </option>
+
+        </select>
+
+
+
+
+
+
+
+
+
+        {/* FEELING */}
+        <select
+          value={feelingFilter}
+          onChange={(e) =>
+            setFeelingFilter(
+              e.target.value
+            )
+          }
+          style={inputStyle}
+        >
+
+          <option value="All">
+            All Feelings
+          </option>
+
+          <option value="Happy 😊">
+            Happy 😊
+          </option>
+
+          <option value="Normal 🙂">
+            Normal 🙂
+          </option>
+
+          <option value="Tired 😴">
+            Tired 😴
+          </option>
+
+        </select>
+
+
+
+
+
+
+
+
+
+        {/* DATE */}
+        <input
+          type="date"
+          value={selectedDate}
+          onChange={(e) =>
+            setSelectedDate(
+              e.target.value
+            )
+          }
+          style={inputStyle}
+        />
+
       </div>
+
+
+
 
 
 
@@ -344,6 +525,9 @@ export default function AdminDashboard() {
         </h2>
 
         <br />
+
+
+
 
 
 
@@ -387,6 +571,10 @@ export default function AdminDashboard() {
         </ResponsiveContainer>
 
       </div>
+
+
+
+
 
 
 
@@ -441,6 +629,8 @@ export default function AdminDashboard() {
 
 
 
+
+
           <tbody>
 
             {
@@ -470,6 +660,8 @@ export default function AdminDashboard() {
 
 
 
+
+
                   <td>
 
                     <span
@@ -490,7 +682,13 @@ export default function AdminDashboard() {
                           : item.status === "Break"
                           ? "#3b82f6"
 
-                          : "#10b981"
+                          : item.status === "Completed"
+                          ? "#10b981"
+
+                          : item.status === "Half Day"
+                          ? "#8b5cf6"
+
+                          : "#ef4444"
                       }}
                     >
 
@@ -499,6 +697,8 @@ export default function AdminDashboard() {
                     </span>
 
                   </td>
+
+
 
 
 
@@ -532,6 +732,8 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+
 
 
 
@@ -577,5 +779,5 @@ const inputStyle = {
 
   border: "none",
 
-  width: "250px"
+  width: "100%"
 };
