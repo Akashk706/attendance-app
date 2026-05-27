@@ -3,12 +3,15 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer,
   BarChart,
   Bar,
   XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer
+  YAxis
 } from "recharts";
 
 export default function Dashboard() {
@@ -33,6 +36,7 @@ export default function Dashboard() {
 
 
 
+
   // FETCH ATTENDANCE
   const fetchAttendance = async () => {
 
@@ -52,17 +56,21 @@ export default function Dashboard() {
 
 
 
+
   useEffect(() => {
 
     fetchAttendance();
 
     const interval = setInterval(() => {
+
       fetchAttendance();
+
     }, 3000);
 
     return () => clearInterval(interval);
 
   }, []);
+
 
 
 
@@ -99,6 +107,7 @@ export default function Dashboard() {
 
 
 
+
   // CLOCK OUT
   const handleClockOut = async (attendanceId) => {
 
@@ -117,12 +126,15 @@ export default function Dashboard() {
 
 
 
-  // BREAK STATUS
+
+
+  // BREAK
   const handleBreak = async () => {
 
-    const workingRecord = attendance.find(
-      item => item.status === "Working"
-    );
+    const workingRecord =
+      attendance.find(
+        item => item.status === "Working"
+      );
 
     if (!workingRecord) return;
 
@@ -142,12 +154,15 @@ export default function Dashboard() {
 
 
 
-  // BACK TO WORK
+
+
+  // RESUME WORK
   const handleResume = async () => {
 
-    const breakRecord = attendance.find(
-      item => item.status === "Break"
-    );
+    const breakRecord =
+      attendance.find(
+        item => item.status === "Break"
+      );
 
     if (!breakRecord) return;
 
@@ -167,6 +182,8 @@ export default function Dashboard() {
 
 
 
+
+
   // LOGOUT
   const handleLogout = () => {
 
@@ -180,17 +197,19 @@ export default function Dashboard() {
 
 
 
+
+
   const currentWorking =
     attendance.find(
-      item =>
-        item.status === "Working"
+      item => item.status === "Working"
     );
 
   const currentBreak =
     attendance.find(
-      item =>
-        item.status === "Break"
+      item => item.status === "Break"
     );
+
+
 
 
 
@@ -212,24 +231,109 @@ export default function Dashboard() {
 
 
 
-
   const completedDays =
     attendance.filter(
-      item =>
-        item.status === "Completed"
+      item => item.status === "Completed"
     ).length;
 
 
 
 
 
-  // CHART DATA
+
+
+
+  // WEEKLY CHART
   const chartData =
     attendance.slice(0, 7).map(item => ({
+
       date: item.date,
+
       hours:
         parseFloat(item.workingHours) || 0
+
     }));
+
+
+
+
+
+
+
+
+
+  // ATTENDANCE PERCENTAGE GRAPH
+  const totalRecords =
+    attendance.length;
+
+  const completedCount =
+    attendance.filter(
+      item => item.status === "Completed"
+    ).length;
+
+  const halfDayCount =
+    attendance.filter(
+      item => item.status === "Half Day"
+    ).length;
+
+  const breakCount =
+    attendance.filter(
+      item => item.status === "Break"
+    ).length;
+
+  const notWorkingCount =
+    attendance.filter(
+      item => item.status === "Not Working"
+    ).length;
+
+
+
+
+
+
+
+  const attendancePercentageData = [
+
+    {
+      name: "Completed",
+      value: completedCount
+    },
+
+    {
+      name: "Half Day",
+      value: halfDayCount
+    },
+
+    {
+      name: "Break",
+      value: breakCount
+    },
+
+    {
+      name: "Not Working",
+      value: notWorkingCount
+    }
+
+  ];
+
+
+
+
+
+
+
+  const COLORS = [
+
+    "#10b981",
+
+    "#3b82f6",
+
+    "#f59e0b",
+
+    "#ef4444"
+
+  ];
+
 
 
 
@@ -247,6 +351,9 @@ export default function Dashboard() {
         color: "white"
       }}
     >
+
+
+
 
 
 
@@ -276,6 +383,9 @@ export default function Dashboard() {
 
 
 
+
+
+
         <button
           onClick={handleLogout}
           style={logoutBtn}
@@ -284,6 +394,8 @@ export default function Dashboard() {
         </button>
 
       </div>
+
+
 
 
 
@@ -310,12 +422,16 @@ export default function Dashboard() {
           <p>Total Days</p>
         </div>
 
+
+
         <div style={cardStyle}>
           <h2>
             {totalHours.toFixed(1)} hrs
           </h2>
           <p>Total Hours</p>
         </div>
+
+
 
         <div style={cardStyle}>
           <h2>
@@ -325,6 +441,8 @@ export default function Dashboard() {
         </div>
 
       </div>
+
+
 
 
 
@@ -346,6 +464,8 @@ export default function Dashboard() {
             </h3>
 
             <br />
+
+
 
 
 
@@ -376,6 +496,9 @@ export default function Dashboard() {
               </option>
 
             </select>
+
+
+
 
 
 
@@ -413,6 +536,9 @@ export default function Dashboard() {
 
 
 
+
+
+
             <button
               onClick={handleClockIn}
               style={greenBtn}
@@ -425,6 +551,9 @@ export default function Dashboard() {
         )
 
       }
+
+
+
 
 
 
@@ -456,6 +585,8 @@ export default function Dashboard() {
 
 
 
+
+
               <button
                 onClick={() =>
                   handleClockOut(
@@ -472,6 +603,9 @@ export default function Dashboard() {
           )
 
         }
+
+
+
 
 
 
@@ -502,6 +636,9 @@ export default function Dashboard() {
 
 
 
+
+
+
       {/* WEEKLY CHART */}
       <div style={sectionStyle}>
 
@@ -510,6 +647,8 @@ export default function Dashboard() {
         </h2>
 
         <br />
+
+
 
 
 
@@ -536,6 +675,169 @@ export default function Dashboard() {
         </ResponsiveContainer>
 
       </div>
+
+
+
+
+
+
+
+
+
+
+
+
+      {/* ATTENDANCE PERCENTAGE GRAPH */}
+      <div
+        style={{
+          background: "#1e293b",
+          padding: "25px",
+          borderRadius: "15px",
+          marginTop: "30px",
+          marginBottom: "30px"
+        }}
+      >
+
+        <h2>
+          Attendance Percentage Graph
+        </h2>
+
+        <br />
+
+
+
+
+
+
+        <ResponsiveContainer
+          width="100%"
+          height={350}
+        >
+
+          <PieChart>
+
+            <Pie
+              data={attendancePercentageData}
+              dataKey="value"
+              outerRadius={120}
+              label
+            >
+
+              {
+
+                attendancePercentageData.map(
+                  (entry, index) => (
+
+                    <Cell
+                      key={index}
+                      fill={
+                        COLORS[index]
+                      }
+                    />
+
+                  )
+                )
+
+              }
+
+            </Pie>
+
+            <Tooltip />
+
+          </PieChart>
+
+        </ResponsiveContainer>
+
+
+
+
+
+
+
+
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent:
+              "space-around",
+            marginTop: "20px",
+            flexWrap: "wrap"
+          }}
+        >
+
+          <h3>
+            🟢 Completed:
+            {
+              totalRecords
+              ? (
+                  completedCount /
+                  totalRecords *
+                  100
+                ).toFixed(0)
+              : 0
+            }%
+          </h3>
+
+
+
+
+
+
+          <h3>
+            🔵 Half Day:
+            {
+              totalRecords
+              ? (
+                  halfDayCount /
+                  totalRecords *
+                  100
+                ).toFixed(0)
+              : 0
+            }%
+          </h3>
+
+
+
+
+
+
+          <h3>
+            🟠 Break:
+            {
+              totalRecords
+              ? (
+                  breakCount /
+                  totalRecords *
+                  100
+                ).toFixed(0)
+              : 0
+            }%
+          </h3>
+
+
+
+
+
+
+          <h3>
+            🔴 Not Working:
+            {
+              totalRecords
+              ? (
+                  notWorkingCount /
+                  totalRecords *
+                  100
+                ).toFixed(0)
+              : 0
+            }%
+          </h3>
+
+        </div>
+
+      </div>
+
+
 
 
 
@@ -580,6 +882,10 @@ export default function Dashboard() {
           </tr>
 
         </thead>
+
+
+
+
 
 
 
@@ -637,61 +943,120 @@ export default function Dashboard() {
 
 
 
+
+
+
+
 // STYLES
 const cardStyle = {
+
   background: "#1e293b",
+
   padding: "20px",
+
   borderRadius: "15px",
+
   textAlign: "center"
 };
 
+
+
+
 const sectionStyle = {
+
   background: "#1e293b",
+
   padding: "20px",
+
   borderRadius: "15px",
+
   marginBottom: "25px"
 };
 
+
+
+
 const inputStyle = {
+
   padding: "12px",
+
   marginRight: "10px",
+
   borderRadius: "10px"
 };
 
+
+
+
 const greenBtn = {
+
   padding: "12px 20px",
+
   background: "#10b981",
+
   border: "none",
+
   color: "white",
+
   borderRadius: "10px",
+
   cursor: "pointer",
+
   marginRight: "10px"
 };
+
+
+
 
 const blueBtn = {
+
   padding: "12px 20px",
+
   background: "#3b82f6",
+
   border: "none",
+
   color: "white",
+
   borderRadius: "10px",
+
   cursor: "pointer",
+
   marginRight: "10px"
 };
 
+
+
+
 const redBtn = {
+
   padding: "12px 20px",
+
   background: "#ef4444",
+
   border: "none",
+
   color: "white",
+
   borderRadius: "10px",
+
   cursor: "pointer"
 };
 
+
+
+
 const logoutBtn = {
+
   padding: "12px 20px",
+
   background: "#ef4444",
+
   border: "none",
+
   color: "white",
+
   borderRadius: "10px",
+
   cursor: "pointer"
 };
