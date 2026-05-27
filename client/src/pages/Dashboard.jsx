@@ -12,6 +12,8 @@ export default function Dashboard() {
   const BACKEND_URL =
     "https://attendance-backend-32mo.onrender.com";
 
+
+
   // FETCH ATTENDANCE
   const fetchAttendance = async () => {
 
@@ -27,9 +29,21 @@ export default function Dashboard() {
     setAttendance(userAttendance.reverse());
   };
 
+
+
   useEffect(() => {
+
     fetchAttendance();
+
+    const interval = setInterval(() => {
+      fetchAttendance();
+    }, 3000);
+
+    return () => clearInterval(interval);
+
   }, []);
+
+
 
 
   // CLOCK IN
@@ -47,6 +61,7 @@ export default function Dashboard() {
   };
 
 
+
   // CLOCK OUT
   const handleClockOut = async (attendanceId) => {
 
@@ -61,6 +76,8 @@ export default function Dashboard() {
   };
 
 
+
+
   // LOGOUT
   const handleLogout = () => {
 
@@ -70,15 +87,26 @@ export default function Dashboard() {
   };
 
 
+
+
+  const currentWorking =
+    attendance.find(
+      item => item.status === "Working"
+    );
+
+
+
   return (
+
     <div
       style={{
         padding: "30px",
-        background: "#111827",
+        background: "#0f172a",
         minHeight: "100vh",
         color: "white"
       }}
     >
+
 
       {/* HEADER */}
       <div
@@ -91,24 +119,37 @@ export default function Dashboard() {
       >
 
         <div>
-          <h1>
+
+          <h1
+            style={{
+              fontSize: "45px",
+              marginBottom: "10px"
+            }}
+          >
             Welcome {user?.name}
           </h1>
 
-          <p>
+          <p
+            style={{
+              color: "#cbd5e1"
+            }}
+          >
             Employee Attendance Dashboard
           </p>
+
         </div>
+
 
         <button
           onClick={handleLogout}
           style={{
-            padding: "10px 20px",
-            background: "red",
+            padding: "12px 20px",
+            background: "#ef4444",
             border: "none",
             color: "white",
-            borderRadius: "8px",
-            cursor: "pointer"
+            borderRadius: "10px",
+            cursor: "pointer",
+            fontWeight: "bold"
           }}
         >
           Logout
@@ -117,124 +158,210 @@ export default function Dashboard() {
       </div>
 
 
-      {/* STATUS */}
+
+
+      {/* STATUS CARD */}
       <div
         style={{
-          background: "#1f2937",
-          padding: "20px",
-          borderRadius: "10px",
-          marginBottom: "20px"
+          background: "#1e293b",
+          padding: "25px",
+          borderRadius: "15px",
+          marginBottom: "25px",
+          textAlign: "center"
         }}
       >
 
         <h2>
-          Today's Status:
+
+          Current Status:
+
           {
-            attendance.length > 0
-            ? attendance[0].status
-            : " Not Marked"
+
+            currentWorking
+            ? " 🟡 Working"
+
+            : attendance[0]?.status === "Completed"
+            ? " 🟢 Completed"
+
+            : attendance[0]?.status === "Half Day"
+            ? " 🔵 Half Day"
+
+            : " 🔴 Not Working"
+
           }
+
         </h2>
 
       </div>
 
 
+
+
       {/* BUTTONS */}
       <div
         style={{
-          marginBottom: "20px"
+          marginBottom: "25px"
         }}
       >
 
-        <button
-          onClick={handleClockIn}
-          style={{
-            padding: "12px 20px",
-            marginRight: "10px",
-            background: "#10b981",
-            border: "none",
-            color: "white",
-            borderRadius: "8px",
-            cursor: "pointer"
-          }}
-        >
-          Clock In
-        </button>
+        {
+
+          !currentWorking && (
+
+            <button
+              onClick={handleClockIn}
+              style={{
+                padding: "12px 22px",
+                marginRight: "10px",
+                background: "#10b981",
+                border: "none",
+                color: "white",
+                borderRadius: "10px",
+                cursor: "pointer",
+                fontWeight: "bold"
+              }}
+            >
+              Clock In
+            </button>
+
+          )
+
+        }
+
+
+        {
+
+          currentWorking && (
+
+            <button
+              onClick={() =>
+                handleClockOut(currentWorking.id)
+              }
+              style={{
+                padding: "12px 22px",
+                background: "#3b82f6",
+                border: "none",
+                color: "white",
+                borderRadius: "10px",
+                cursor: "pointer",
+                fontWeight: "bold"
+              }}
+            >
+              Clock Out
+            </button>
+
+          )
+
+        }
 
       </div>
+
+
+
 
 
       {/* TABLE */}
       <table
         border="1"
-        cellPadding="10"
+        cellPadding="12"
         width="100%"
         style={{
           background: "white",
           color: "black",
-          borderCollapse: "collapse"
+          borderCollapse: "collapse",
+          borderRadius: "10px",
+          overflow: "hidden"
         }}
       >
 
-        <thead>
+        <thead
+          style={{
+            background: "#e2e8f0"
+          }}
+        >
 
           <tr>
+
             <th>Date</th>
+
             <th>Clock In</th>
+
             <th>Clock Out</th>
+
             <th>Status</th>
+
             <th>Working Hours</th>
-            <th>Action</th>
+
           </tr>
 
         </thead>
 
+
+
         <tbody>
 
           {
+
             attendance.map((item) => (
 
               <tr key={item.id}>
 
+
                 <td>{item.date}</td>
+
 
                 <td>{item.clockIn}</td>
 
-                <td>{item.clockOut || "-"}</td>
 
-                <td>{item.status}</td>
+                <td>
+                  {item.clockOut || "-"}
+                </td>
 
-                <td>{item.workingHours || "-"}</td>
+
 
                 <td>
 
-                  {
-                    !item.clockOut && (
+                  <span
+                    style={{
+                      padding: "6px 12px",
+                      borderRadius: "20px",
+                      color: "white",
+                      fontWeight: "bold",
 
-                      <button
-                        onClick={() =>
-                          handleClockOut(item.id)
-                        }
-                        style={{
-                          padding: "8px 15px",
-                          background: "#3b82f6",
-                          border: "none",
-                          color: "white",
-                          borderRadius: "6px",
-                          cursor: "pointer"
-                        }}
-                      >
-                        Clock Out
-                      </button>
+                      background:
 
-                    )
-                  }
+                        item.status === "Working"
+                        ? "#f59e0b"
+
+                        : item.status === "Completed"
+                        ? "#10b981"
+
+                        : item.status === "Half Day"
+                        ? "#3b82f6"
+
+                        : "#ef4444"
+                    }}
+                  >
+
+                    {item.status}
+
+                  </span>
 
                 </td>
+
+
+
+                <td>
+
+                  {item.workingHours || "-"}
+
+                </td>
+
 
               </tr>
 
             ))
+
           }
 
         </tbody>
