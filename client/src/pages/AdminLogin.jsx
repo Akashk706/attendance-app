@@ -24,7 +24,7 @@ export default function AdminLogin() {
       &&
 
       password.trim() ===
-        "Akash@123"
+        "Akash@#123"
 
     ) {
 

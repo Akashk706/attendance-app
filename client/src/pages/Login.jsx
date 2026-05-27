@@ -1,6 +1,8 @@
-import { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+
+import axios from "axios";
+
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
 
@@ -9,21 +11,28 @@ export default function Login() {
   const [isRegister, setIsRegister] =
     useState(false);
 
-  const [name, setName] = useState('');
+  const [name, setName] = useState("");
 
-  const [email, setEmail] = useState('');
+  const [email, setEmail] =
+    useState("");
 
   const [password, setPassword] =
-    useState('');
+    useState("");
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+
+    e.preventDefault();
 
     try {
+
+      // REGISTER
 
       if (isRegister) {
 
         await axios.post(
-          'https://attendance-backend-32mo.onrender.com/api/auth/register',
+
+          "https://attendance-backend-32mo.onrender.com/api/auth/register",
+
           {
             name,
             email,
@@ -31,12 +40,18 @@ export default function Login() {
           }
         );
 
-        alert('Registration Successful');
+        alert("Registration Successful");
+
+        setIsRegister(false);
 
       } else {
 
+        // LOGIN
+
         const res = await axios.post(
-          'https://attendance-backend-32mo.onrender.com/api/auth/login',
+
+          "https://attendance-backend-32mo.onrender.com/api/auth/login",
+
           {
             email,
             password
@@ -44,20 +59,16 @@ export default function Login() {
         );
 
         localStorage.setItem(
-          'user',
+          "user",
           JSON.stringify(res.data.user)
         );
 
-        navigate('/dashboard');
+        navigate("/dashboard");
       }
 
     } catch (error) {
 
-      alert(
-        error.response?.data?.message ||
-        'Something went wrong'
-      );
-
+      alert("Invalid Credentials");
     }
   };
 
@@ -65,44 +76,63 @@ export default function Login() {
 
     <div
       style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        background: '#f5f5f5'
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        background: "#f1f5f9"
       }}
     >
 
-      <div
+      <form
+        onSubmit={handleSubmit}
         style={{
-          width: '350px',
-          padding: '20px',
-          background: 'white',
-          borderRadius: '10px',
+          background: "white",
+          padding: "40px",
+          borderRadius: "15px",
+          width: "350px",
           boxShadow:
-            '0 0 10px rgba(0,0,0,0.1)'
+            "0 0 10px rgba(0,0,0,0.1)"
         }}
       >
 
-        <h2>
-          {isRegister
-            ? 'Register'
-            : 'Login'}
-        </h2>
+        <h1
+          style={{
+            textAlign: "center",
+            marginBottom: "20px"
+          }}
+        >
 
-        {isRegister && (
+          {
 
-          <input
-            type="text"
-            placeholder="Name"
-            value={name}
-            onChange={(e) =>
-              setName(e.target.value)
-            }
-            style={inputStyle}
-          />
+            isRegister
+            ? "Create Account"
+            : "Login"
 
-        )}
+          }
+
+        </h1>
+
+        {
+
+          isRegister && (
+
+            <input
+              type="text"
+              placeholder="Name"
+              value={name}
+              onChange={(e) =>
+                setName(e.target.value)
+              }
+              style={{
+                width: "100%",
+                padding: "12px",
+                marginBottom: "15px"
+              }}
+            />
+
+          )
+        }
 
         <input
           type="email"
@@ -111,7 +141,11 @@ export default function Login() {
           onChange={(e) =>
             setEmail(e.target.value)
           }
-          style={inputStyle}
+          style={{
+            width: "100%",
+            padding: "12px",
+            marginBottom: "15px"
+          }}
         />
 
         <input
@@ -121,51 +155,59 @@ export default function Login() {
           onChange={(e) =>
             setPassword(e.target.value)
           }
-          style={inputStyle}
+          style={{
+            width: "100%",
+            padding: "12px",
+            marginBottom: "15px"
+          }}
         />
 
         <button
-          onClick={handleSubmit}
-          style={buttonStyle}
+          type="submit"
+          style={{
+            width: "100%",
+            padding: "12px",
+            background: "black",
+            color: "white",
+            border: "none",
+            cursor: "pointer"
+          }}
         >
-          {isRegister
-            ? 'Register'
-            : 'Login'}
+
+          {
+
+            isRegister
+            ? "Register"
+            : "Login"
+
+          }
+
         </button>
 
         <p
+          style={{
+            textAlign: "center",
+            marginTop: "20px",
+            cursor: "pointer",
+            color: "blue"
+          }}
           onClick={() =>
             setIsRegister(!isRegister)
           }
-          style={{
-            marginTop: '15px',
-            cursor: 'pointer',
-            color: 'blue'
-          }}
         >
-          {isRegister
-            ? 'Already have an account? Login'
-            : 'Create Account'}
+
+          {
+
+            isRegister
+            ? "Already have account?"
+            : "Create Account"
+
+          }
+
         </p>
 
-      </div>
+      </form>
 
     </div>
   );
 }
-
-const inputStyle = {
-  width: '100%',
-  padding: '10px',
-  marginTop: '10px'
-};
-
-const buttonStyle = {
-  width: '100%',
-  padding: '10px',
-  marginTop: '15px',
-  background: 'black',
-  color: 'white',
-  border: 'none',
-  cursor: 'pointer'
-};

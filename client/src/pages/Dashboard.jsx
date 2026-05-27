@@ -1,29 +1,9 @@
 import { useEffect, useState } from "react";
-
 import axios from "axios";
-
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis
-} from "recharts";
 
 export default function Dashboard() {
 
-  const [attendance, setAttendance] =
-    useState([]);
-
-  const [todayStatus, setTodayStatus] =
-    useState("");
-
-  const [feeling, setFeeling] =
-    useState("");
+  const [attendance, setAttendance] = useState([]);
 
   const user = JSON.parse(
     localStorage.getItem("user")
@@ -31,9 +11,6 @@ export default function Dashboard() {
 
   const BACKEND_URL =
     "https://attendance-backend-32mo.onrender.com";
-
-
-
 
 
 
@@ -54,17 +31,12 @@ export default function Dashboard() {
 
 
 
-
-
-
   useEffect(() => {
 
     fetchAttendance();
 
     const interval = setInterval(() => {
-
       fetchAttendance();
-
     }, 3000);
 
     return () => clearInterval(interval);
@@ -74,37 +46,19 @@ export default function Dashboard() {
 
 
 
-
-
-
   // CLOCK IN
   const handleClockIn = async () => {
-
-    if (!todayStatus || !feeling) {
-
-      alert(
-        "Please select status and feeling"
-      );
-
-      return;
-    }
 
     await axios.post(
       `${BACKEND_URL}/api/attendance/clock-in`,
       {
         userId: user.id,
-        userName: user.name,
-        todayStatus,
-        feeling
+        userName: user.name
       }
     );
 
     fetchAttendance();
   };
-
-
-
-
 
 
 
@@ -124,66 +78,6 @@ export default function Dashboard() {
 
 
 
-
-
-
-
-  // BREAK
-  const handleBreak = async () => {
-
-    const workingRecord =
-      attendance.find(
-        item => item.status === "Working"
-      );
-
-    if (!workingRecord) return;
-
-    await axios.post(
-      `${BACKEND_URL}/api/attendance/update-status`,
-      {
-        attendanceId: workingRecord.id,
-        status: "Break"
-      }
-    );
-
-    fetchAttendance();
-  };
-
-
-
-
-
-
-
-
-  // RESUME WORK
-  const handleResume = async () => {
-
-    const breakRecord =
-      attendance.find(
-        item => item.status === "Break"
-      );
-
-    if (!breakRecord) return;
-
-    await axios.post(
-      `${BACKEND_URL}/api/attendance/update-status`,
-      {
-        attendanceId: breakRecord.id,
-        status: "Working"
-      }
-    );
-
-    fetchAttendance();
-  };
-
-
-
-
-
-
-
-
   // LOGOUT
   const handleLogout = () => {
 
@@ -195,149 +89,10 @@ export default function Dashboard() {
 
 
 
-
-
-
-
   const currentWorking =
     attendance.find(
       item => item.status === "Working"
     );
-
-  const currentBreak =
-    attendance.find(
-      item => item.status === "Break"
-    );
-
-
-
-
-
-
-
-
-  // DASHBOARD CARDS
-  const totalHours = attendance.reduce(
-    (total, item) => {
-
-      const hrs =
-        parseFloat(item.workingHours) || 0;
-
-      return total + hrs;
-
-    },
-    0
-  );
-
-
-
-  const completedDays =
-    attendance.filter(
-      item => item.status === "Completed"
-    ).length;
-
-
-
-
-
-
-
-
-  // WEEKLY CHART
-  const chartData =
-    attendance.slice(0, 7).map(item => ({
-
-      date: item.date,
-
-      hours:
-        parseFloat(item.workingHours) || 0
-
-    }));
-
-
-
-
-
-
-
-
-
-  // ATTENDANCE PERCENTAGE GRAPH
-  const totalRecords =
-    attendance.length;
-
-  const completedCount =
-    attendance.filter(
-      item => item.status === "Completed"
-    ).length;
-
-  const halfDayCount =
-    attendance.filter(
-      item => item.status === "Half Day"
-    ).length;
-
-  const breakCount =
-    attendance.filter(
-      item => item.status === "Break"
-    ).length;
-
-  const notWorkingCount =
-    attendance.filter(
-      item => item.status === "Not Working"
-    ).length;
-
-
-
-
-
-
-
-  const attendancePercentageData = [
-
-    {
-      name: "Completed",
-      value: completedCount
-    },
-
-    {
-      name: "Half Day",
-      value: halfDayCount
-    },
-
-    {
-      name: "Break",
-      value: breakCount
-    },
-
-    {
-      name: "Not Working",
-      value: notWorkingCount
-    }
-
-  ];
-
-
-
-
-
-
-
-  const COLORS = [
-
-    "#10b981",
-
-    "#3b82f6",
-
-    "#f59e0b",
-
-    "#ef4444"
-
-  ];
-
-
-
-
-
 
 
 
@@ -353,17 +108,11 @@ export default function Dashboard() {
     >
 
 
-
-
-
-
-
       {/* HEADER */}
       <div
         style={{
           display: "flex",
-          justifyContent:
-            "space-between",
+          justifyContent: "space-between",
           alignItems: "center",
           marginBottom: "30px"
         }}
@@ -371,24 +120,37 @@ export default function Dashboard() {
 
         <div>
 
-          <h1>
+          <h1
+            style={{
+              fontSize: "45px",
+              marginBottom: "10px"
+            }}
+          >
             Welcome {user?.name}
           </h1>
 
-          <p>
-            Employee Dashboard
+          <p
+            style={{
+              color: "#cbd5e1"
+            }}
+          >
+            Employee Attendance Dashboard
           </p>
 
         </div>
 
 
-
-
-
-
         <button
           onClick={handleLogout}
-          style={logoutBtn}
+          style={{
+            padding: "12px 20px",
+            background: "#ef4444",
+            border: "none",
+            color: "white",
+            borderRadius: "10px",
+            cursor: "pointer",
+            fontWeight: "bold"
+          }}
         >
           Logout
         </button>
@@ -398,172 +160,44 @@ export default function Dashboard() {
 
 
 
-
-
-
-
-
-
-      {/* DASHBOARD CARDS */}
+      {/* STATUS CARD */}
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns:
-            "repeat(auto-fit,minmax(220px,1fr))",
-          gap: "20px",
-          marginBottom: "30px"
+          background: "#1e293b",
+          padding: "25px",
+          borderRadius: "15px",
+          marginBottom: "25px",
+          textAlign: "center"
         }}
       >
 
-        <div style={cardStyle}>
-          <h2>
-            {attendance.length}
-          </h2>
-          <p>Total Days</p>
-        </div>
+        <h2>
 
+          Current Status:
 
+          {
 
-        <div style={cardStyle}>
-          <h2>
-            {totalHours.toFixed(1)} hrs
-          </h2>
-          <p>Total Hours</p>
-        </div>
+            currentWorking
+            ? " 🟡 Working"
 
+            : attendance[0]?.status === "Completed"
+            ? " 🟢 Completed"
 
+            : attendance[0]?.status === "Half Day"
+            ? " 🔵 Half Day"
 
-        <div style={cardStyle}>
-          <h2>
-            {completedDays}
-          </h2>
-          <p>Completed Days</p>
-        </div>
+            : " 🔴 Not Working"
+
+          }
+
+        </h2>
 
       </div>
 
 
 
 
-
-
-
-
-
-
-      {/* START DAY */}
-      {
-
-        !currentWorking &&
-        !currentBreak && (
-
-          <div style={sectionStyle}>
-
-            <h3>
-              Start Your Day
-            </h3>
-
-            <br />
-
-
-
-
-
-            <select
-              value={todayStatus}
-              onChange={(e) =>
-                setTodayStatus(
-                  e.target.value
-                )
-              }
-              style={inputStyle}
-            >
-
-              <option value="">
-                Select Work Type
-              </option>
-
-              <option>
-                Office Work
-              </option>
-
-              <option>
-                Work From Home
-              </option>
-
-              <option>
-                Client Meeting
-              </option>
-
-            </select>
-
-
-
-
-
-
-
-
-            <select
-              value={feeling}
-              onChange={(e) =>
-                setFeeling(
-                  e.target.value
-                )
-              }
-              style={inputStyle}
-            >
-
-              <option value="">
-                Today's Feeling
-              </option>
-
-              <option>
-                Happy 😊
-              </option>
-
-              <option>
-                Normal 🙂
-              </option>
-
-              <option>
-                Tired 😴
-              </option>
-
-            </select>
-
-
-
-
-
-
-
-
-            <button
-              onClick={handleClockIn}
-              style={greenBtn}
-            >
-              Start Day
-            </button>
-
-          </div>
-
-        )
-
-      }
-
-
-
-
-
-
-
-
-
-
-
-
-      {/* BREAK BUTTONS */}
+      {/* BUTTONS */}
       <div
         style={{
           marginBottom: "25px"
@@ -572,54 +206,48 @@ export default function Dashboard() {
 
         {
 
-          currentWorking && (
+          !currentWorking && (
 
-            <>
-
-              <button
-                onClick={handleBreak}
-                style={blueBtn}
-              >
-                Take Break
-              </button>
-
-
-
-
-
-              <button
-                onClick={() =>
-                  handleClockOut(
-                    currentWorking.id
-                  )
-                }
-                style={redBtn}
-              >
-                Clock Out
-              </button>
-
-            </>
+            <button
+              onClick={handleClockIn}
+              style={{
+                padding: "12px 22px",
+                marginRight: "10px",
+                background: "#10b981",
+                border: "none",
+                color: "white",
+                borderRadius: "10px",
+                cursor: "pointer",
+                fontWeight: "bold"
+              }}
+            >
+              Clock In
+            </button>
 
           )
 
         }
 
 
-
-
-
-
-
-
         {
 
-          currentBreak && (
+          currentWorking && (
 
             <button
-              onClick={handleResume}
-              style={greenBtn}
+              onClick={() =>
+                handleClockOut(currentWorking.id)
+              }
+              style={{
+                padding: "12px 22px",
+                background: "#3b82f6",
+                border: "none",
+                color: "white",
+                borderRadius: "10px",
+                cursor: "pointer",
+                fontWeight: "bold"
+              }}
             >
-              Resume Work
+              Clock Out
             </button>
 
           )
@@ -632,244 +260,29 @@ export default function Dashboard() {
 
 
 
-
-
-
-
-
-
-
-      {/* WEEKLY CHART */}
-      <div style={sectionStyle}>
-
-        <h2>
-          Weekly Attendance Chart
-        </h2>
-
-        <br />
-
-
-
-
-
-        <ResponsiveContainer
-          width="100%"
-          height={300}
-        >
-
-          <BarChart data={chartData}>
-
-            <XAxis dataKey="date" />
-
-            <YAxis />
-
-            <Tooltip />
-
-            <Bar
-              dataKey="hours"
-              fill="#3b82f6"
-            />
-
-          </BarChart>
-
-        </ResponsiveContainer>
-
-      </div>
-
-
-
-
-
-
-
-
-
-
-
-
-      {/* ATTENDANCE PERCENTAGE GRAPH */}
-      <div
-        style={{
-          background: "#1e293b",
-          padding: "25px",
-          borderRadius: "15px",
-          marginTop: "30px",
-          marginBottom: "30px"
-        }}
-      >
-
-        <h2>
-          Attendance Percentage Graph
-        </h2>
-
-        <br />
-
-
-
-
-
-
-        <ResponsiveContainer
-          width="100%"
-          height={350}
-        >
-
-          <PieChart>
-
-            <Pie
-              data={attendancePercentageData}
-              dataKey="value"
-              outerRadius={120}
-              label
-            >
-
-              {
-
-                attendancePercentageData.map(
-                  (entry, index) => (
-
-                    <Cell
-                      key={index}
-                      fill={
-                        COLORS[index]
-                      }
-                    />
-
-                  )
-                )
-
-              }
-
-            </Pie>
-
-            <Tooltip />
-
-          </PieChart>
-
-        </ResponsiveContainer>
-
-
-
-
-
-
-
-
-
-        <div
-          style={{
-            display: "flex",
-            justifyContent:
-              "space-around",
-            marginTop: "20px",
-            flexWrap: "wrap"
-          }}
-        >
-
-          <h3>
-            🟢 Completed:
-            {
-              totalRecords
-              ? (
-                  completedCount /
-                  totalRecords *
-                  100
-                ).toFixed(0)
-              : 0
-            }%
-          </h3>
-
-
-
-
-
-
-          <h3>
-            🔵 Half Day:
-            {
-              totalRecords
-              ? (
-                  halfDayCount /
-                  totalRecords *
-                  100
-                ).toFixed(0)
-              : 0
-            }%
-          </h3>
-
-
-
-
-
-
-          <h3>
-            🟠 Break:
-            {
-              totalRecords
-              ? (
-                  breakCount /
-                  totalRecords *
-                  100
-                ).toFixed(0)
-              : 0
-            }%
-          </h3>
-
-
-
-
-
-
-          <h3>
-            🔴 Not Working:
-            {
-              totalRecords
-              ? (
-                  notWorkingCount /
-                  totalRecords *
-                  100
-                ).toFixed(0)
-              : 0
-            }%
-          </h3>
-
-        </div>
-
-      </div>
-
-
-
-
-
-
-
-
-
-
-
-
       {/* TABLE */}
       <table
         border="1"
+        cellPadding="12"
         width="100%"
-        cellPadding="10"
         style={{
           background: "white",
           color: "black",
-          marginTop: "30px",
-          borderCollapse: "collapse"
+          borderCollapse: "collapse",
+          borderRadius: "10px",
+          overflow: "hidden"
         }}
       >
 
-        <thead>
+        <thead
+          style={{
+            background: "#e2e8f0"
+          }}
+        >
 
           <tr>
 
             <th>Date</th>
-
-            <th>Work Type</th>
-
-            <th>Feeling</th>
 
             <th>Clock In</th>
 
@@ -877,7 +290,7 @@ export default function Dashboard() {
 
             <th>Status</th>
 
-            <th>Hours</th>
+            <th>Working Hours</th>
 
           </tr>
 
@@ -885,45 +298,65 @@ export default function Dashboard() {
 
 
 
-
-
-
-
-
-
         <tbody>
 
           {
 
-            attendance.map(item => (
+            attendance.map((item) => (
 
               <tr key={item.id}>
 
+
                 <td>{item.date}</td>
 
-                <td>
-                  {item.todayStatus}
-                </td>
 
-                <td>
-                  {item.feeling}
-                </td>
+                <td>{item.clockIn}</td>
 
-                <td>
-                  {item.clockIn}
-                </td>
 
                 <td>
                   {item.clockOut || "-"}
                 </td>
 
-                <td>
-                  {item.status}
-                </td>
+
 
                 <td>
-                  {item.workingHours || "-"}
+
+                  <span
+                    style={{
+                      padding: "6px 12px",
+                      borderRadius: "20px",
+                      color: "white",
+                      fontWeight: "bold",
+
+                      background:
+
+                        item.status === "Working"
+                        ? "#f59e0b"
+
+                        : item.status === "Completed"
+                        ? "#10b981"
+
+                        : item.status === "Half Day"
+                        ? "#3b82f6"
+
+                        : "#ef4444"
+                    }}
+                  >
+
+                    {item.status}
+
+                  </span>
+
                 </td>
+
+
+
+                <td>
+
+                  {item.workingHours || "-"}
+
+                </td>
+
 
               </tr>
 
@@ -938,125 +371,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-// STYLES
-const cardStyle = {
-
-  background: "#1e293b",
-
-  padding: "20px",
-
-  borderRadius: "15px",
-
-  textAlign: "center"
-};
-
-
-
-
-const sectionStyle = {
-
-  background: "#1e293b",
-
-  padding: "20px",
-
-  borderRadius: "15px",
-
-  marginBottom: "25px"
-};
-
-
-
-
-const inputStyle = {
-
-  padding: "12px",
-
-  marginRight: "10px",
-
-  borderRadius: "10px"
-};
-
-
-
-
-const greenBtn = {
-
-  padding: "12px 20px",
-
-  background: "#10b981",
-
-  border: "none",
-
-  color: "white",
-
-  borderRadius: "10px",
-
-  cursor: "pointer",
-
-  marginRight: "10px"
-};
-
-
-
-
-const blueBtn = {
-
-  padding: "12px 20px",
-
-  background: "#3b82f6",
-
-  border: "none",
-
-  color: "white",
-
-  borderRadius: "10px",
-
-  cursor: "pointer",
-
-  marginRight: "10px"
-};
-
-
-
-
-const redBtn = {
-
-  padding: "12px 20px",
-
-  background: "#ef4444",
-
-  border: "none",
-
-  color: "white",
-
-  borderRadius: "10px",
-
-  cursor: "pointer"
-};
-
-
-
-
-const logoutBtn = {
-
-  padding: "12px 20px",
-
-  background: "#ef4444",
-
-  border: "none",
-
-  color: "white",
-
-  borderRadius: "10px",
-
-  cursor: "pointer"
-};
