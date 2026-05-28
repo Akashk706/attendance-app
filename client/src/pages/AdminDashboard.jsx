@@ -121,17 +121,38 @@ export default function AdminDashboard() {
     if (!clockOut) return "-";
     
     try {
-      const inTime = new Date(`1970/01/01 ${clockIn}`);
-      const outTime = new Date(`1970/01/01 ${clockOut}`);
+      // Parse 12-hour time format (e.g., "4:55:02 PM")
+      const parseTime = (timeStr) => {
+        if (!timeStr) return null;
+        
+        const [time, period] = timeStr.split(' ');
+        const [hours, minutes, seconds] = time.split(':').map(Number);
+        
+        let h = hours;
+        if (period === 'PM' && hours !== 12) h += 12;
+        if (period === 'AM' && hours === 12) h = 0;
+        
+        return { h, m: minutes || 0, s: seconds || 0 };
+      };
       
-      if (outTime < inTime) {
-        outTime.setDate(outTime.getDate() + 1);
+      const inParsed = parseTime(clockIn);
+      const outParsed = parseTime(clockOut);
+      
+      if (!inParsed || !outParsed) return "-";
+      
+      // Convert to minutes for easier calculation
+      const inMinutes = inParsed.h * 60 + inParsed.m + inParsed.s / 60;
+      let outMinutes = outParsed.h * 60 + outParsed.m + outParsed.s / 60;
+      
+      // If out time is before in time, assume it's the next day
+      if (outMinutes < inMinutes) {
+        outMinutes += 24 * 60; // Add 24 hours
       }
       
-      const diffMs = outTime - inTime;
-      const hours = (diffMs / (1000 * 60 * 60)).toFixed(2);
+      const diffMinutes = outMinutes - inMinutes;
+      const hours = (diffMinutes / 60).toFixed(2);
       
-      return isNaN(hours) ? "-" : `${hours} hrs`;
+      return parseFloat(hours) < 0 ? "-" : `${hours} hrs`;
     } catch {
       return "-";
     }
