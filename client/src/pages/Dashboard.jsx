@@ -20,6 +20,7 @@ export default function Dashboard() {
     localStorage.getItem("user")
   );
 
+  // BACKEND URL
   const baseURL =
     import.meta.env.VITE_API_BASE_URL ||
     (import.meta.env.MODE === "development"
@@ -47,6 +48,7 @@ export default function Dashboard() {
   const [tomorrowPlan, setTomorrowPlan] =
     useState("");
 
+  // CHECK LOGIN
   useEffect(() => {
 
     if (!user) {
@@ -56,6 +58,7 @@ export default function Dashboard() {
 
   }, [navigate, user]);
 
+  // FETCH ATTENDANCE
   useEffect(() => {
 
     fetchAttendance();
@@ -80,10 +83,11 @@ export default function Dashboard() {
 
     } catch (error) {
 
-      console.log(error);
+      console.error(error);
     }
   };
 
+  // CLOCK IN
   const clockIn = async () => {
 
     try {
@@ -102,10 +106,11 @@ export default function Dashboard() {
 
     } catch (error) {
 
-      console.log(error);
+      console.error(error);
     }
   };
 
+  // CLOCK OUT
   const clockOut = async (id) => {
 
     try {
@@ -125,10 +130,11 @@ export default function Dashboard() {
 
     } catch (error) {
 
-      console.log(error);
+      console.error(error);
     }
   };
 
+  // TAKE BREAK
   const takeBreak = async (id) => {
 
     try {
@@ -145,10 +151,11 @@ export default function Dashboard() {
 
     } catch (error) {
 
-      console.log(error);
+      console.error(error);
     }
   };
 
+  // RESUME WORK
   const resumeWork = async (id) => {
 
     try {
@@ -165,10 +172,11 @@ export default function Dashboard() {
 
     } catch (error) {
 
-      console.log(error);
+      console.error(error);
     }
   };
 
+  // LOGOUT
   const logout = () => {
 
     localStorage.removeItem("user");
@@ -176,6 +184,7 @@ export default function Dashboard() {
     navigate("/");
   };
 
+  // ACTIVE RECORD
   const activeRecord = records.find(
     item =>
       item.status === "Working" ||
@@ -198,17 +207,26 @@ export default function Dashboard() {
         style={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center"
+          alignItems: "center",
+          flexWrap: "wrap"
         }}
       >
 
         <div>
 
-          <h1>
+          <h1
+            style={{
+              fontSize: "45px"
+            }}
+          >
             Welcome {user?.name}
           </h1>
 
-          <p>
+          <p
+            style={{
+              color: "#cbd5e1"
+            }}
+          >
             Employee Attendance Dashboard
           </p>
 
@@ -217,15 +235,16 @@ export default function Dashboard() {
         <button
           onClick={logout}
           style={{
+            padding: "12px 25px",
             background: "#ef4444",
-            border: "none",
-            padding: "12px 20px",
-            borderRadius: "10px",
             color: "white",
+            border: "none",
+            borderRadius: "10px",
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
-            gap: "10px"
+            gap: "10px",
+            fontWeight: "bold"
           }}
         >
 
@@ -243,15 +262,15 @@ export default function Dashboard() {
         <div
           style={{
             background: "#1e293b",
-            marginTop: "30px",
-            padding: "30px",
+            marginTop: "40px",
+            padding: "35px",
             borderRadius: "20px",
             textAlign: "center"
           }}
         >
 
           <FaUserClock
-            size={50}
+            size={60}
             color="#38bdf8"
           />
 
@@ -268,7 +287,11 @@ export default function Dashboard() {
 
           <div
             style={{
-              marginTop: "25px"
+              marginTop: "30px",
+              display: "flex",
+              justifyContent: "center",
+              gap: "20px",
+              flexWrap: "wrap"
             }}
           >
 
@@ -277,11 +300,7 @@ export default function Dashboard() {
               onChange={(e) =>
                 setTodayStatus(e.target.value)
               }
-              style={{
-                padding: "12px",
-                width: "250px",
-                marginRight: "20px"
-              }}
+              style={selectStyle}
             >
 
               <option value="">
@@ -307,10 +326,7 @@ export default function Dashboard() {
               onChange={(e) =>
                 setFeeling(e.target.value)
               }
-              style={{
-                padding: "12px",
-                width: "250px"
-              }}
+              style={selectStyle}
             >
 
               <option value="">
@@ -336,7 +352,7 @@ export default function Dashboard() {
           <button
             onClick={clockIn}
             style={{
-              marginTop: "25px",
+              marginTop: "30px",
               padding: "14px 35px",
               background: "#10b981",
               border: "none",
@@ -344,6 +360,7 @@ export default function Dashboard() {
               color: "white",
               cursor: "pointer",
               fontSize: "16px",
+              fontWeight: "bold",
               display: "inline-flex",
               alignItems: "center",
               gap: "10px"
@@ -365,45 +382,57 @@ export default function Dashboard() {
         <div
           style={{
             background: "#1e293b",
-            marginTop: "30px",
-            padding: "30px",
+            marginTop: "40px",
+            padding: "35px",
             borderRadius: "20px"
           }}
         >
 
-          <h2>
+          <h2
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px"
+            }}
+          >
 
             {
               activeRecord.status === "Working"
 
                 ? (
-                  <span
-                    style={{
-                      color: "#22c55e"
-                    }}
-                  >
-                    <FaCheckCircle /> Working
-                  </span>
+                  <>
+                    <FaCheckCircle color="#22c55e" />
+                    Working
+                  </>
+                )
+
+                : activeRecord.status === "Break"
+
+                ? (
+                  <>
+                    <FaCoffee color="#f59e0b" />
+                    Break
+                  </>
                 )
 
                 : (
-                  <span
-                    style={{
-                      color: "#f59e0b"
-                    }}
-                  >
-                    <FaCoffee /> Break
-                  </span>
+                  <>
+                    <FaPowerOff color="#ef4444" />
+                    Completed
+                  </>
                 )
             }
 
           </h2>
 
+          {/* TEXTAREAS */}
           <div
             style={{
-              marginTop: "20px",
+              marginTop: "25px",
               display: "grid",
-              gap: "15px"
+              gridTemplateColumns:
+                "repeat(auto-fit,minmax(250px,1fr))",
+              gap: "20px"
             }}
           >
 
@@ -445,42 +474,50 @@ export default function Dashboard() {
 
           </div>
 
+          {/* BUTTONS */}
           <div
             style={{
-              marginTop: "25px",
+              marginTop: "30px",
               display: "flex",
-              gap: "20px"
+              gap: "20px",
+              flexWrap: "wrap"
             }}
           >
 
             {
-              activeRecord.status === "Working"
+              activeRecord.status === "Working" && (
 
-                ? (
-                  <button
-                    onClick={() =>
-                      takeBreak(activeRecord._id)
-                    }
-                    style={breakBtn}
-                  >
-                    <FaCoffee />
+                <button
+                  onClick={() =>
+                    takeBreak(activeRecord._id)
+                  }
+                  style={breakBtn}
+                >
 
-                    Break
-                  </button>
-                )
+                  <FaCoffee />
 
-                : (
-                  <button
-                    onClick={() =>
-                      resumeWork(activeRecord._id)
-                    }
-                    style={resumeBtn}
-                  >
-                    <FaPlayCircle />
+                  Take Break
 
-                    Resume
-                  </button>
-                )
+                </button>
+              )
+            }
+
+            {
+              activeRecord.status === "Break" && (
+
+                <button
+                  onClick={() =>
+                    resumeWork(activeRecord._id)
+                  }
+                  style={resumeBtn}
+                >
+
+                  <FaPlayCircle />
+
+                  Resume Work
+
+                </button>
+              )
             }
 
             <button
@@ -505,6 +542,19 @@ export default function Dashboard() {
   );
 }
 
+const selectStyle = {
+
+  padding: "14px",
+
+  width: "260px",
+
+  borderRadius: "10px",
+
+  border: "none",
+
+  outline: "none"
+};
+
 const textareaStyle = {
 
   width: "100%",
@@ -517,7 +567,9 @@ const textareaStyle = {
 
   outline: "none",
 
-  minHeight: "80px"
+  minHeight: "120px",
+
+  resize: "none"
 };
 
 const breakBtn = {
@@ -526,7 +578,7 @@ const breakBtn = {
 
   border: "none",
 
-  padding: "12px 25px",
+  padding: "14px 25px",
 
   borderRadius: "10px",
 
@@ -538,7 +590,9 @@ const breakBtn = {
 
   alignItems: "center",
 
-  gap: "10px"
+  gap: "10px",
+
+  fontWeight: "bold"
 };
 
 const resumeBtn = {
@@ -547,7 +601,7 @@ const resumeBtn = {
 
   border: "none",
 
-  padding: "12px 25px",
+  padding: "14px 25px",
 
   borderRadius: "10px",
 
@@ -559,7 +613,9 @@ const resumeBtn = {
 
   alignItems: "center",
 
-  gap: "10px"
+  gap: "10px",
+
+  fontWeight: "bold"
 };
 
 const clockoutBtn = {
@@ -568,7 +624,7 @@ const clockoutBtn = {
 
   border: "none",
 
-  padding: "12px 25px",
+  padding: "14px 25px",
 
   borderRadius: "10px",
 
@@ -580,5 +636,7 @@ const clockoutBtn = {
 
   alignItems: "center",
 
-  gap: "10px"
+  gap: "10px",
+
+  fontWeight: "bold"
 };
