@@ -486,7 +486,7 @@ export default function AdminDashboard() {
                     </td>
 
                     <td>
-                      {item.totalHours || "-"}
+                      {item.workingHours || "-"}
                     </td>
 
                   </tr>
