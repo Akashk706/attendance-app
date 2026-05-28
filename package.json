@@ -4,9 +4,13 @@
   "version": "1.0.0",
   "scripts": {
     "start-server": "cd server && npm run dev",
-    "start-client": "cd client && npm run dev"
+    "start-client": "cd client && npm run dev",
+    "dev": "npx concurrently \"npm --prefix server run dev\" \"npm --prefix client run dev\""
   },
   "dependencies": {
     "recharts": "^3.8.1"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
   }
 }
