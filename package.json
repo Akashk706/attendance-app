@@ -1,4 +1,11 @@
 {
+  "name": "attendance-app",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "start-server": "cd server && npm run dev",
+    "start-client": "cd client && npm run dev"
+  },
   "dependencies": {
     "recharts": "^3.8.1"
   }

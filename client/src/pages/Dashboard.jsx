@@ -43,7 +43,7 @@ export default function Dashboard() {
 
     const res = await axios.get(
 
-      "https://attendance-backend-32mo.onrender.com/api/attendance/all"
+      "http://localhost:5000/api/attendance/all"
 
     );
 
@@ -62,7 +62,7 @@ export default function Dashboard() {
 
     await axios.post(
 
-      "https://attendance-backend-32mo.onrender.com/api/attendance/clock-in",
+      "http://localhost:5000/api/attendance/clock-in",
 
       {
 
@@ -85,7 +85,7 @@ export default function Dashboard() {
 
     await axios.post(
 
-      "https://attendance-backend-32mo.onrender.com/api/attendance/clock-out",
+      "http://localhost:5000/api/attendance/clock-out",
 
       {
 
@@ -110,7 +110,7 @@ export default function Dashboard() {
 
     await axios.post(
 
-      "https://attendance-backend-32mo.onrender.com/api/attendance/update-status",
+      "http://localhost:5000/api/attendance/update-status",
 
       {
 
@@ -129,7 +129,7 @@ export default function Dashboard() {
 
     await axios.post(
 
-      "https://attendance-backend-32mo.onrender.com/api/attendance/update-status",
+      "http://localhost:5000/api/attendance/update-status",
 
       {
 
@@ -165,17 +165,9 @@ export default function Dashboard() {
   );
 
   return (
-
-    <div
-      style={{
-        background: "#020617",
-        minHeight: "100vh",
-        padding: "40px",
-        color: "white"
-      }}
-    >
-
-      {/* HEADER */}
+    <div className="dashboard-shell">
+      <div className="dashboard-container">
+        {/* HEADER */}
 
       <div
         style={{
@@ -214,20 +206,11 @@ export default function Dashboard() {
       </div>
 
       {/* START DAY */}
-
-      {
-
-        !activeRecord && (
-
-          <div
-            style={{
-              background: "#1e293b",
-              padding: "30px",
-              borderRadius: "15px",
-              marginTop: "30px",
-              textAlign: "center"
-            }}
-          >
+      {!activeRecord && (
+        <div
+          className="card"
+          style={{ marginTop: "30px", textAlign: "center" }}
+        >
 
             <h2>
 
@@ -335,18 +318,8 @@ export default function Dashboard() {
 
       {/* ACTIVE STATUS */}
 
-      {
-
-        activeRecord && (
-
-          <div
-            style={{
-              background: "#1e293b",
-              padding: "25px",
-              borderRadius: "15px",
-              marginTop: "30px"
-            }}
-          >
+      {activeRecord && (
+        <div className="card" style={{ marginTop: "30px" }}>
 
             <h2>
 
@@ -518,23 +491,8 @@ export default function Dashboard() {
 
       {/* TABLE */}
 
-      <div
-        style={{
-          marginTop: "40px"
-        }}
-      >
-
-        <table
-          width="100%"
-          cellPadding="15"
-          style={{
-            background: "white",
-            color: "black",
-            borderCollapse: "collapse",
-            borderRadius: "15px",
-            overflow: "hidden"
-          }}
-        >
+      <div className="table-card">
+        <table>
 
           <thead
             style={{
@@ -667,6 +625,7 @@ export default function Dashboard() {
 
       </div>
 
+      </div>
     </div>
   );
 }

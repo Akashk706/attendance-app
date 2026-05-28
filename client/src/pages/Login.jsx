@@ -31,7 +31,7 @@ export default function Login() {
 
         await axios.post(
 
-          "https://attendance-backend-32mo.onrender.com/api/auth/register",
+          "http://localhost:5000/api/auth/register",
 
           {
             name,
@@ -50,7 +50,7 @@ export default function Login() {
 
         const res = await axios.post(
 
-          "https://attendance-backend-32mo.onrender.com/api/auth/login",
+          "http://localhost:5000/api/auth/login",
 
           {
             email,
@@ -73,141 +73,64 @@ export default function Login() {
   };
 
   return (
+    <div className="page-shell">
+      <form onSubmit={handleSubmit} className="auth-card">
+        <h1>{isRegister ? "Create Account" : "Login"}</h1>
 
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        background: "#f1f5f9"
-      }}
-    >
-
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          background: "white",
-          padding: "40px",
-          borderRadius: "15px",
-          width: "350px",
-          boxShadow:
-            "0 0 10px rgba(0,0,0,0.1)"
-        }}
-      >
-
-        <h1
-          style={{
-            textAlign: "center",
-            marginBottom: "20px"
-          }}
-        >
-
-          {
-
-            isRegister
-            ? "Create Account"
-            : "Login"
-
-          }
-
-        </h1>
-
-        {
-
-          isRegister && (
-
-            <input
-              type="text"
-              placeholder="Name"
-              value={name}
-              onChange={(e) =>
-                setName(e.target.value)
-              }
-              style={{
-                width: "100%",
-                padding: "12px",
-                marginBottom: "15px"
-              }}
-            />
-
-          )
-        }
+        {isRegister && (
+          <input
+            type="text"
+            name="name"
+            autoComplete="name"
+            placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onPaste={(e) => setName(e.clipboardData.getData("text"))}
+            className="input-field"
+          />
+        )}
 
         <input
           type="email"
+          name="email"
+          autoComplete="username"
           placeholder="Email"
           value={email}
-          onChange={(e) =>
-            setEmail(e.target.value)
-          }
-          style={{
-            width: "100%",
-            padding: "12px",
-            marginBottom: "15px"
+          onChange={(e) => setEmail(e.target.value)}
+          onPaste={(e) => {
+            e.preventDefault();
+            setEmail(e.clipboardData.getData("text").trim());
           }}
+          className="input-field"
         />
 
         <input
           type="password"
+          name="password"
+          autoComplete="current-password"
           placeholder="Password"
           value={password}
-          onChange={(e) =>
-            setPassword(e.target.value)
-          }
-          style={{
-            width: "100%",
-            padding: "12px",
-            marginBottom: "15px"
+          onChange={(e) => setPassword(e.target.value)}
+          onPaste={(e) => {
+            e.preventDefault();
+            setPassword(e.clipboardData.getData("text").trim());
           }}
+          className="input-field"
         />
 
-        <button
-          type="submit"
-          style={{
-            width: "100%",
-            padding: "12px",
-            background: "black",
-            color: "white",
-            border: "none",
-            cursor: "pointer"
-          }}
-        >
-
-          {
-
-            isRegister
-            ? "Register"
-            : "Login"
-
-          }
-
+        <button type="submit" className="primary-btn">
+          {isRegister ? "Register" : "Login"}
         </button>
 
         <p
-          style={{
-            textAlign: "center",
-            marginTop: "20px",
-            cursor: "pointer",
-            color: "blue"
-          }}
-          onClick={() =>
-            setIsRegister(!isRegister)
-          }
+          className="secondary-link"
+          onClick={() => setIsRegister(!isRegister)}
         >
-
-          {
-
-            isRegister
-            ? "Already have account?"
-            : "Create Account"
-
-          }
-
+          {isRegister
+            ? "Already have an account? Login"
+            : "Create Account"}
         </p>
-
       </form>
-
     </div>
   );
 }

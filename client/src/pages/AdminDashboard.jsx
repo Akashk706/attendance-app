@@ -32,7 +32,7 @@ export default function AdminDashboard() {
     try {
 
       const res = await axios.get(
-        "https://attendance-backend-32mo.onrender.com/api/attendance/all"
+        "http://localhost:5000/api/attendance/all"
       );
 
       setRecords(res.data);
@@ -384,6 +384,7 @@ export default function AdminDashboard() {
       >
 
         <table
+          className="admin-table"
           style={{
             width: "100%",
             borderCollapse:

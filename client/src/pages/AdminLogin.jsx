@@ -10,6 +10,9 @@ export default function AdminLogin() {
   const [password, setPassword] =
     useState("");
 
+  const cleanInput = (value) =>
+    value.replace(/\s+/g, "").trim();
+
   const handleLogin = (e) => {
 
     e.preventDefault();
@@ -18,12 +21,12 @@ export default function AdminLogin() {
 
     if (
 
-      email.trim() ===
+      cleanInput(email).toLowerCase() ===
         "akashk@damcogroup.com"
 
       &&
 
-      password.trim() ===
+      cleanInput(password) ===
         "Akash@#123"
 
     ) {
@@ -42,88 +45,42 @@ export default function AdminLogin() {
   };
 
   return (
-
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        background:
-          "#020617"
-      }}
-    >
-
-      <form
-        onSubmit={handleLogin}
-        style={{
-          background: "#1e293b",
-          padding: "40px",
-          borderRadius: "20px",
-          width: "400px"
-        }}
-      >
-
-        <h1
-          style={{
-            color: "white",
-            textAlign: "center",
-            marginBottom: "30px"
-          }}
-        >
-          Admin Login
-        </h1>
+    <div className="page-shell">
+      <form onSubmit={handleLogin} className="auth-card">
+        <h1>Admin Login</h1>
 
         <input
           type="email"
+          name="email"
+          autoComplete="username"
           placeholder="Admin Email"
           value={email}
-          onChange={(e) =>
-            setEmail(e.target.value)
-          }
-          style={{
-            width: "100%",
-            padding: "14px",
-            marginBottom: "20px",
-            borderRadius: "10px",
-            border: "none"
+          onChange={(e) => setEmail(e.target.value)}
+          onPaste={(e) => {
+            e.preventDefault();
+            setEmail(e.clipboardData.getData("text").trim());
           }}
+          className="input-field"
         />
 
         <input
           type="password"
+          name="password"
+          autoComplete="current-password"
           placeholder="Password"
           value={password}
-          onChange={(e) =>
-            setPassword(e.target.value)
-          }
-          style={{
-            width: "100%",
-            padding: "14px",
-            marginBottom: "20px",
-            borderRadius: "10px",
-            border: "none"
+          onChange={(e) => setPassword(e.target.value)}
+          onPaste={(e) => {
+            e.preventDefault();
+            setPassword(e.clipboardData.getData("text").trim());
           }}
+          className="input-field"
         />
 
-        <button
-          type="submit"
-          style={{
-            width: "100%",
-            padding: "14px",
-            background: "#10b981",
-            color: "white",
-            border: "none",
-            borderRadius: "10px",
-            fontSize: "16px",
-            cursor: "pointer"
-          }}
-        >
+        <button type="submit" className="primary-btn">
           Login
         </button>
-
       </form>
-
     </div>
   );
 }

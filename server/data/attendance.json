@@ -4,23 +4,57 @@
     "userId": "1779794481923",
     "date": "5/26/2026",
     "clockIn": "4:55:02 PM",
-    "clockOut": "4:55:05 PM",
-    "status": "Working"
+    "clockOut": "12:10:50 PM",
+    "status": "Not Working",
+    "clockOutTimestamp": 1779950450000,
+    "workingHours": "NaN hrs"
   },
   {
     "id": "1779794714033",
     "userId": "1779794481923",
     "date": "5/26/2026",
     "clockIn": "4:55:14 PM",
-    "clockOut": "",
-    "status": "Break"
+    "clockOut": "12:10:49 PM",
+    "status": "Not Working",
+    "clockOutTimestamp": 1779950449000,
+    "workingHours": "NaN hrs"
   },
   {
     "id": "1779797434233",
     "userId": "1779794481923",
     "date": "5/26/2026",
     "clockIn": "5:40:34 PM",
-    "clockOut": "5:41:11 PM",
+    "clockOut": "12:10:48 PM",
+    "status": "Not Working",
+    "clockOutTimestamp": 1779950448000,
+    "workingHours": "NaN hrs"
+  },
+  {
+    "id": "1779950482933",
+    "userId": "1779794481923",
+    "userName": "Akash",
+    "todayStatus": "Office Work",
+    "feeling": "Happy 😊",
+    "date": "5/28/2026",
+    "clockIn": "12:11:22 PM",
+    "clockInTimestamp": 1779950482000,
+    "clockOut": "12:19:45 PM",
+    "clockOutTimestamp": 1779950985000,
+    "workingHours": "0.14 hrs",
+    "status": "Not Working"
+  },
+  {
+    "id": "1779950990026",
+    "userId": "1779794481923",
+    "userName": "Akash",
+    "todayStatus": "Office Work",
+    "feeling": "Happy 😊",
+    "date": "5/28/2026",
+    "clockIn": "12:19:50 PM",
+    "clockInTimestamp": 1779950990000,
+    "clockOut": "",
+    "clockOutTimestamp": "",
+    "workingHours": "",
     "status": "Working"
   }
 ]
