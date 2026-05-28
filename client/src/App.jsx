@@ -10,6 +10,8 @@ import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminLogin from "./pages/AdminLogin";
 
+console.log("NEW BUILD WORKING");
+
 export default function App() {
 
   const admin =
