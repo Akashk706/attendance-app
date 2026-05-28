@@ -130,7 +130,8 @@ export default function AdminDashboard() {
       
       const diffMs = outTime - inTime;
       const hours = (diffMs / (1000 * 60 * 60)).toFixed(2);
-      return `${hours} hrs`;
+      
+      return isNaN(hours) ? "-" : `${hours} hrs`;
     } catch {
       return "-";
     }
@@ -446,7 +447,7 @@ export default function AdminDashboard() {
                           "15px"
                       }}
                     >
-                      {item.userName}
+                      {item.userName || "-"}
                     </td>
 
                     <td>
