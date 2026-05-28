@@ -1,28 +1,39 @@
-import { useEffect, useState } from "react";
+import React, {
+  useEffect,
+  useState
+} from "react";
+
+import axios from "axios";
 
 import {
   FaPlay,
   FaPause,
-  FaSignOutAlt,
+  FaStop,
   FaCheckCircle,
+  FaSignOutAlt
 } from "react-icons/fa";
 
 export default function Dashboard() {
 
+  // BACKEND URL
+  const baseURL =
+    import.meta.env.VITE_API_BASE_URL ||
+    (import.meta.env.MODE === "development"
+      ? "http://localhost:5000"
+      : "https://attendance-backend-32mo.onrender.com");
+
+  // USER
   const user =
-    JSON.parse(localStorage.getItem("user"));
+    JSON.parse(
+      localStorage.getItem("user")
+    );
 
-  const [records, setRecords] =
-    useState([]);
-
-  const [status, setStatus] =
-    useState("Working");
-
+  // STATES
   const [todayStatus, setTodayStatus] =
-    useState("");
+    useState("Office Work");
 
   const [feeling, setFeeling] =
-    useState("");
+    useState("Happy 😊");
 
   const [progress, setProgress] =
     useState("");
@@ -36,43 +47,48 @@ export default function Dashboard() {
   const [tomorrowPlan, setTomorrowPlan] =
     useState("");
 
+  const [currentStatus, setCurrentStatus] =
+    useState("Not Working");
+
+  const [records, setRecords] =
+    useState([]);
+
+  // FETCH RECORDS
   useEffect(() => {
 
-    const saved =
-      JSON.parse(
-        localStorage.getItem("attendance")
-      ) || [];
-
-    setRecords(saved);
+    fetchRecords();
 
   }, []);
 
-  const saveData = (updated) => {
+  const fetchRecords = async () => {
 
-    setRecords(updated);
+    try {
 
-    localStorage.setItem(
-      "attendance",
-      JSON.stringify(updated)
-    );
-  };
-
-  const startDay = () => {
-
-    if (!todayStatus || !feeling) {
-
-      alert(
-        "Please select today's status and feeling"
+      const res = await axios.get(
+        `${baseURL}/api/attendance/all`
       );
 
-      return;
+      const userRecords =
+        res.data.filter(
+          item =>
+            item.userName ===
+            (user?.name || "Akash")
+        );
+
+      setRecords(userRecords);
+
+    } catch (error) {
+
+      console.log(error);
     }
+  };
+
+  // START DAY
+  const startDay = async () => {
 
     const newRecord = {
 
-      id: Date.now(),
-
-      name:
+      userName:
         user?.name || "Akash",
 
       date:
@@ -82,15 +98,6 @@ export default function Dashboard() {
 
       feeling,
 
-      clockIn:
-        new Date().toLocaleTimeString(),
-
-      clockOut: "-",
-
-      workStatus: "Working",
-
-      workingHours: 0,
-
       progress,
 
       tasks,
@@ -98,129 +105,128 @@ export default function Dashboard() {
       issues,
 
       tomorrowPlan,
+
+      clockIn:
+        new Date().toLocaleTimeString(),
+
+      clockOut: "",
+
+      status: "Working",
+
+      workingHours: "-"
     };
 
-    const updated = [
-      newRecord,
-      ...records,
-    ];
+    try {
 
-    saveData(updated);
+      await axios.post(
+        `${baseURL}/api/attendance/add`,
+        newRecord
+      );
 
-    setStatus("Working");
+      alert(
+        "Day Started Successfully"
+      );
 
-    alert("Day Started Successfully");
+      setCurrentStatus("Working");
+
+      fetchRecords();
+
+    } catch (error) {
+
+      console.log(error);
+
+      alert("Error saving data");
+    }
   };
 
+  // BREAK
   const takeBreak = () => {
 
-    const updated =
-      records.map((item, index) =>
+    setCurrentStatus("Break");
 
-        index === 0
-
-          ? {
-              ...item,
-              workStatus: "Break",
-            }
-
-          : item
-      );
-
-    saveData(updated);
-
-    setStatus("Break");
+    alert("Break Started");
   };
 
+  // RESUME
   const resumeWork = () => {
 
-    const updated =
-      records.map((item, index) =>
+    setCurrentStatus("Working");
 
-        index === 0
+    alert("Work Resumed");
+  };
 
-          ? {
-              ...item,
-              workStatus: "Working",
-            }
+  // CLOCK OUT
+  const clockOut = async () => {
 
-          : item
+    try {
+
+      const lastRecord =
+        records[records.length - 1];
+
+      if (!lastRecord) {
+
+        alert("No active record found");
+
+        return;
+      }
+
+      const clockOutTime =
+        new Date().toLocaleTimeString();
+
+      // CALCULATE HOURS
+      const inTime =
+        new Date(
+          `1970-01-01 ${lastRecord.clockIn}`
+        );
+
+      const outTime =
+        new Date(
+          `1970-01-01 ${clockOutTime}`
+        );
+
+      const diff =
+        (outTime - inTime) /
+        (1000 * 60 * 60);
+
+      const workingHours =
+        diff.toFixed(2) + " hrs";
+
+      await axios.put(
+
+        `${baseURL}/api/attendance/update/${lastRecord._id}`,
+
+        {
+
+          clockOut:
+            clockOutTime,
+
+          status:
+            "Completed",
+
+          workingHours
+        }
       );
 
-    saveData(updated);
+      alert("Day Completed");
 
-    setStatus("Working");
+      setCurrentStatus("Completed");
+
+      fetchRecords();
+
+    } catch (error) {
+
+      console.log(error);
+
+      alert("Clock out failed");
+    }
   };
 
-  const clockOut = () => {
-
-    const updated =
-      records.map((item, index) => {
-
-        if (index === 0) {
-
-          const start =
-            new Date(
-              `${item.date} ${item.clockIn}`
-            );
-
-          const end =
-            new Date();
-
-          const hours =
-            (
-              (end - start) /
-              (1000 * 60 * 60)
-            ).toFixed(2);
-
-          return {
-
-            ...item,
-
-            clockOut:
-              new Date().toLocaleTimeString(),
-
-            workStatus: "Completed",
-
-            workingHours: hours,
-          };
-        }
-
-        return item;
-      });
-
-    saveData(updated);
-
-    setStatus("Completed");
-
-    alert("Clocked Out Successfully");
-  };
-
+  // LOGOUT
   const logout = () => {
 
     localStorage.removeItem("user");
 
     window.location.href = "/";
-  };
-
-  const thStyle = {
-
-    border: "1px solid #ccc",
-
-    padding: "12px",
-
-    background: "#0f172a",
-
-    color: "white",
-  };
-
-  const tdStyle = {
-
-    border: "1px solid #ccc",
-
-    padding: "10px",
-
-    textAlign: "center",
   };
 
   return (
@@ -229,19 +235,17 @@ export default function Dashboard() {
       style={{
         minHeight: "100vh",
         background: "#020617",
-        color: "white",
-        padding: "40px",
+        padding: "30px"
       }}
     >
 
       {/* HEADER */}
-
       <div
         style={{
           display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "30px",
+          justifyContent:
+            "space-between",
+          alignItems: "center"
         }}
       >
 
@@ -249,15 +253,18 @@ export default function Dashboard() {
 
           <h1
             style={{
-              fontSize: "42px",
+              color: "white",
+              fontSize: "45px"
             }}
           >
-            Welcome {user?.name || "Akash"}
+            Welcome {
+              user?.name || "Akash"
+            }
           </h1>
 
           <p
             style={{
-              color: "#cbd5e1",
+              color: "white"
             }}
           >
             Employee Attendance Dashboard
@@ -271,58 +278,59 @@ export default function Dashboard() {
             background: "#ef4444",
             color: "white",
             border: "none",
-            padding: "12px 20px",
+            padding:
+              "12px 25px",
             borderRadius: "10px",
             cursor: "pointer",
+            fontWeight: "bold"
           }}
         >
-
           Logout
-
         </button>
 
       </div>
 
-      {/* STATUS CARD */}
-
+      {/* STATUS BOX */}
       <div
         style={{
           background: "#1e293b",
           padding: "30px",
-          borderRadius: "20px",
+          borderRadius: "25px",
+          marginTop: "40px"
         }}
       >
 
         <h2
           style={{
             color:
-              status === "Working"
+              currentStatus === "Working"
                 ? "#22c55e"
-                : status === "Break"
+                : currentStatus === "Break"
                 ? "#f59e0b"
+                : currentStatus === "Completed"
+                ? "#3b82f6"
                 : "#ef4444",
 
             display: "flex",
             alignItems: "center",
             gap: "10px",
+            fontSize: "40px"
           }}
         >
 
           <FaCheckCircle />
 
-          {status}
+          {currentStatus}
 
         </h2>
 
         {/* SELECTS */}
-
         <div
           style={{
             display: "flex",
             gap: "20px",
-            marginTop: "25px",
-            marginBottom: "20px",
-            flexWrap: "wrap",
+            marginTop: "20px",
+            flexWrap: "wrap"
           }}
         >
 
@@ -334,15 +342,11 @@ export default function Dashboard() {
               )
             }
             style={{
-              padding: "12px",
-              width: "250px",
+              padding: "15px",
               borderRadius: "10px",
+              width: "250px"
             }}
           >
-
-            <option value="">
-              Select Today Status
-            </option>
 
             <option>
               Office Work
@@ -362,15 +366,11 @@ export default function Dashboard() {
               )
             }
             style={{
-              padding: "12px",
-              width: "250px",
+              padding: "15px",
               borderRadius: "10px",
+              width: "250px"
             }}
           >
-
-            <option value="">
-              Today Feeling
-            </option>
 
             <option>
               Happy 😊
@@ -389,191 +389,140 @@ export default function Dashboard() {
         </div>
 
         {/* TEXTAREAS */}
-
-        <textarea
-          placeholder="Today's Progress"
-          value={progress}
-          onChange={(e) =>
-            setProgress(
-              e.target.value
-            )
-          }
+        <div
           style={{
-            width: "100%",
-            height: "80px",
-            marginBottom: "15px",
-            borderRadius: "10px",
-            padding: "10px",
+            marginTop: "30px"
           }}
-        />
+        >
 
-        <textarea
-          placeholder="Tasks Completed"
-          value={tasks}
-          onChange={(e) =>
-            setTasks(
-              e.target.value
-            )
-          }
-          style={{
-            width: "100%",
-            height: "80px",
-            marginBottom: "15px",
-            borderRadius: "10px",
-            padding: "10px",
-          }}
-        />
+          <textarea
+            placeholder="Today's Progress"
+            value={progress}
+            onChange={(e) =>
+              setProgress(
+                e.target.value
+              )
+            }
+            style={textareaStyle}
+          />
 
-        <textarea
-          placeholder="Issues Faced"
-          value={issues}
-          onChange={(e) =>
-            setIssues(
-              e.target.value
-            )
-          }
-          style={{
-            width: "100%",
-            height: "80px",
-            marginBottom: "15px",
-            borderRadius: "10px",
-            padding: "10px",
-          }}
-        />
+          <textarea
+            placeholder="Tasks Completed"
+            value={tasks}
+            onChange={(e) =>
+              setTasks(
+                e.target.value
+              )
+            }
+            style={textareaStyle}
+          />
 
-        <textarea
-          placeholder="Tomorrow Plan"
-          value={tomorrowPlan}
-          onChange={(e) =>
-            setTomorrowPlan(
-              e.target.value
-            )
-          }
-          style={{
-            width: "100%",
-            height: "80px",
-            marginBottom: "25px",
-            borderRadius: "10px",
-            padding: "10px",
-          }}
-        />
+          <textarea
+            placeholder="Issues Faced"
+            value={issues}
+            onChange={(e) =>
+              setIssues(
+                e.target.value
+              )
+            }
+            style={textareaStyle}
+          />
+
+          <textarea
+            placeholder="Tomorrow Plan"
+            value={tomorrowPlan}
+            onChange={(e) =>
+              setTomorrowPlan(
+                e.target.value
+              )
+            }
+            style={textareaStyle}
+          />
+
+        </div>
 
         {/* BUTTONS */}
-
         <div
           style={{
             display: "flex",
-            gap: "15px",
-            flexWrap: "wrap",
+            gap: "20px",
+            marginTop: "30px",
+            flexWrap: "wrap"
           }}
         >
 
           <button
             onClick={startDay}
             style={{
-              background: "#22c55e",
-              color: "white",
-              border: "none",
-              padding: "12px 20px",
-              borderRadius: "10px",
-              cursor: "pointer",
+              ...buttonStyle,
+              background: "#22c55e"
             }}
           >
-
             <FaPlay />
-
-            {" "}Start Day
-
+            Start Day
           </button>
 
           <button
             onClick={takeBreak}
             style={{
-              background: "#f59e0b",
-              color: "white",
-              border: "none",
-              padding: "12px 20px",
-              borderRadius: "10px",
-              cursor: "pointer",
+              ...buttonStyle,
+              background: "#f59e0b"
             }}
           >
-
             <FaPause />
-
-            {" "}Break
-
+            Break
           </button>
 
           <button
             onClick={resumeWork}
             style={{
-              background: "#3b82f6",
-              color: "white",
-              border: "none",
-              padding: "12px 20px",
-              borderRadius: "10px",
-              cursor: "pointer",
+              ...buttonStyle,
+              background: "#3b82f6"
             }}
           >
-
             <FaPlay />
-
-            {" "}Resume
-
+            Resume
           </button>
 
           <button
             onClick={clockOut}
             style={{
-              background: "#ef4444",
-              color: "white",
-              border: "none",
-              padding: "12px 20px",
-              borderRadius: "10px",
-              cursor: "pointer",
+              ...buttonStyle,
+              background: "#ef4444"
             }}
           >
-
-            <FaSignOutAlt />
-
-            {" "}Clock Out
-
+            <FaStop />
+            Clock Out
           </button>
 
         </div>
 
       </div>
 
-      {/* HISTORY TABLE */}
-
+      {/* TABLE */}
       <div
         style={{
           marginTop: "40px",
-          background: "#1e293b",
-          padding: "20px",
+          background: "white",
           borderRadius: "20px",
-          overflowX: "auto",
+          overflow: "hidden"
         }}
       >
-
-        <h2
-          style={{
-            marginBottom: "20px",
-          }}
-        >
-          Attendance History
-        </h2>
 
         <table
           style={{
             width: "100%",
-            borderCollapse: "collapse",
-            background: "white",
-            color: "black",
+            borderCollapse:
+              "collapse"
           }}
         >
 
-          <thead>
+          <thead
+            style={{
+              background: "#0f172a",
+              color: "white"
+            }}
+          >
 
             <tr>
 
@@ -598,11 +547,7 @@ export default function Dashboard() {
               </th>
 
               <th style={thStyle}>
-                Work Status
-              </th>
-
-              <th style={thStyle}>
-                Hours
+                Working Hours
               </th>
 
             </tr>
@@ -611,41 +556,49 @@ export default function Dashboard() {
 
           <tbody>
 
-            {records.map((item) => (
+            {
+              records.map(
+                (item, index) => (
 
-              <tr key={item.id}>
+                  <tr
+                    key={index}
+                    style={{
+                      textAlign:
+                        "center"
+                    }}
+                  >
 
-                <td style={tdStyle}>
-                  {item.date}
-                </td>
+                    <td style={tdStyle}>
+                      {item.date}
+                    </td>
 
-                <td style={tdStyle}>
-                  {item.todayStatus}
-                </td>
+                    <td style={tdStyle}>
+                      {item.todayStatus}
+                    </td>
 
-                <td style={tdStyle}>
-                  {item.feeling}
-                </td>
+                    <td style={tdStyle}>
+                      {item.feeling}
+                    </td>
 
-                <td style={tdStyle}>
-                  {item.clockIn}
-                </td>
+                    <td style={tdStyle}>
+                      {item.clockIn}
+                    </td>
 
-                <td style={tdStyle}>
-                  {item.clockOut}
-                </td>
+                    <td style={tdStyle}>
+                      {item.clockOut || "-"}
+                    </td>
 
-                <td style={tdStyle}>
-                  {item.workStatus}
-                </td>
+                    <td style={tdStyle}>
+                      {
+                        item.workingHours
+                      }
+                    </td>
 
-                <td style={tdStyle}>
-                  {item.workingHours} hrs
-                </td>
+                  </tr>
 
-              </tr>
-
-            ))}
+                )
+              )
+            }
 
           </tbody>
 
@@ -656,3 +609,41 @@ export default function Dashboard() {
     </div>
   );
 }
+
+// STYLES
+
+const textareaStyle = {
+
+  width: "100%",
+  minHeight: "90px",
+  marginBottom: "20px",
+  borderRadius: "10px",
+  padding: "15px",
+  fontSize: "16px"
+};
+
+const buttonStyle = {
+
+  border: "none",
+  color: "white",
+  padding: "15px 25px",
+  borderRadius: "12px",
+  fontWeight: "bold",
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  gap: "10px",
+  fontSize: "16px"
+};
+
+const thStyle = {
+
+  padding: "15px"
+};
+
+const tdStyle = {
+
+  padding: "15px",
+  borderBottom:
+    "1px solid #e5e7eb"
+};

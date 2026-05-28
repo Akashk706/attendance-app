@@ -1,161 +1,27 @@
-import React, {
-  useEffect,
-  useState
-} from "react";
-
-import axios from "axios";
-
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  ResponsiveContainer,
-  Legend
-} from "recharts";
+import { useEffect, useState } from "react";
 
 export default function AdminDashboard() {
-
-  // BACKEND URL
-  const baseURL =
-    import.meta.env.VITE_API_BASE_URL ||
-    (import.meta.env.MODE === "development"
-      ? "http://localhost:5000"
-      : "https://attendance-backend-32mo.onrender.com");
 
   const [records, setRecords] =
     useState([]);
 
-  // FETCH DATA
   useEffect(() => {
 
-    fetchAttendance();
+    const saved =
+      JSON.parse(
+        localStorage.getItem("attendance")
+      ) || [];
+
+    setRecords(saved);
 
   }, []);
 
-  const fetchAttendance = async () => {
-
-    try {
-
-      const res = await axios.get(
-        `${baseURL}/api/attendance/all`
-      );
-
-      setRecords(res.data);
-
-    } catch (error) {
-
-      console.log(error);
-    }
-  };
-
-  // LOGOUT
-  const logoutAdmin = () => {
+  const logout = () => {
 
     localStorage.removeItem("admin");
 
     window.location.href =
       "/admin-login";
-  };
-
-  // COUNTS
-  const workingCount =
-    records.filter(
-      item =>
-        item.status === "Working"
-    ).length;
-
-  const breakCount =
-    records.filter(
-      item =>
-        item.status === "Break"
-    ).length;
-
-  const completedCount =
-    records.filter(
-      item =>
-        item.status === "Completed"
-    ).length;
-
-  const notWorkingCount =
-    records.filter(
-      item =>
-        item.status === "Not Working"
-    ).length;
-
-  // PIE CHART DATA
-  const pieData = [
-
-    {
-      name: "Working",
-      value: workingCount
-    },
-
-    {
-      name: "Break",
-      value: breakCount
-    },
-
-    {
-      name: "Completed",
-      value: completedCount
-    },
-
-    {
-      name: "Not Working",
-      value: notWorkingCount
-    }
-  ];
-
-  // COLORS
-  const COLORS = [
-
-    "#22c55e",
-    "#f59e0b",
-    "#3b82f6",
-    "#ef4444"
-  ];
-
-  // Calculate hours from clock times
-  const calculateHours = (clockIn, clockOut) => {
-    if (!clockOut) return "-";
-    
-    try {
-      // Parse 12-hour time format (e.g., "4:55:02 PM")
-      const parseTime = (timeStr) => {
-        if (!timeStr) return null;
-        
-        const [time, period] = timeStr.split(' ');
-        const [hours, minutes, seconds] = time.split(':').map(Number);
-        
-        let h = hours;
-        if (period === 'PM' && hours !== 12) h += 12;
-        if (period === 'AM' && hours === 12) h = 0;
-        
-        return { h, m: minutes || 0, s: seconds || 0 };
-      };
-      
-      const inParsed = parseTime(clockIn);
-      const outParsed = parseTime(clockOut);
-      
-      if (!inParsed || !outParsed) return "-";
-      
-      // Convert to minutes for easier calculation
-      const inMinutes = inParsed.h * 60 + inParsed.m + inParsed.s / 60;
-      let outMinutes = outParsed.h * 60 + outParsed.m + outParsed.s / 60;
-      
-      // If out time is before in time, assume it's the next day
-      if (outMinutes < inMinutes) {
-        outMinutes += 24 * 60; // Add 24 hours
-      }
-      
-      const diffMinutes = outMinutes - inMinutes;
-      const hours = (diffMinutes / 60).toFixed(2);
-      
-      return parseFloat(hours) < 0 ? "-" : `${hours} hrs`;
-    } catch {
-      return "-";
-    }
   };
 
   return (
@@ -164,285 +30,203 @@ export default function AdminDashboard() {
       style={{
         minHeight: "100vh",
         background: "#020617",
-        padding: "40px"
+        padding: "40px",
+        color: "white",
       }}
     >
 
       {/* HEADER */}
+
       <div
         style={{
           display: "flex",
-          justifyContent:
-            "space-between",
-          alignItems: "center"
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "30px",
         }}
       >
 
-        <h1
-          style={{
-            color: "white",
-            fontSize: "45px"
-          }}
-        >
-          Admin Dashboard
-        </h1>
+        <div>
+
+          <h1
+            style={{
+              fontSize: "40px",
+            }}
+          >
+            Admin Dashboard
+          </h1>
+
+          <p
+            style={{
+              color: "#cbd5e1",
+            }}
+          >
+            Employee Attendance Monitoring
+          </p>
+
+        </div>
 
         <button
-          onClick={logoutAdmin}
+          onClick={logout}
           style={{
-            background: "red",
+            background: "#ef4444",
             color: "white",
             border: "none",
-            padding:
-              "12px 25px",
+            padding: "12px 20px",
             borderRadius: "10px",
             cursor: "pointer",
-            fontWeight: "bold"
           }}
         >
+
           Logout
+
         </button>
 
       </div>
 
-      {/* STATS */}
+      {/* CARDS */}
+
       <div
         style={{
           display: "grid",
           gridTemplateColumns:
-            "repeat(4,1fr)",
+            "repeat(auto-fit,minmax(250px,1fr))",
           gap: "20px",
-          marginTop: "40px"
+          marginBottom: "30px",
         }}
       >
 
-        {/* TOTAL */}
         <div
-          style={{
-            background: "#1e293b",
-            padding: "30px",
-            borderRadius: "20px",
-            textAlign: "center"
-          }}
+          style={cardStyle}
         >
 
-          <h2
-            style={{
-              color: "white"
-            }}
-          >
+          <h2>
             {records.length}
           </h2>
 
-          <p
-            style={{
-              color: "white"
-            }}
-          >
+          <p>
             Total Records
           </p>
 
         </div>
 
-        {/* WORKING */}
         <div
-          style={{
-            background: "#1e293b",
-            padding: "30px",
-            borderRadius: "20px",
-            textAlign: "center"
-          }}
+          style={cardStyle}
         >
 
-          <h2
-            style={{
-              color: "#22c55e"
-            }}
-          >
-            {workingCount}
+          <h2>
+
+            {
+              records.filter(
+                (item) =>
+                  item.workStatus ===
+                  "Working"
+              ).length
+            }
+
           </h2>
 
-          <p
-            style={{
-              color: "white"
-            }}
-          >
-            Working
+          <p>
+            Working Employees
           </p>
 
         </div>
 
-        {/* BREAK */}
         <div
-          style={{
-            background: "#1e293b",
-            padding: "30px",
-            borderRadius: "20px",
-            textAlign: "center"
-          }}
+          style={cardStyle}
         >
 
-          <h2
-            style={{
-              color: "#f59e0b"
-            }}
-          >
-            {breakCount}
+          <h2>
+
+            {
+              records.filter(
+                (item) =>
+                  item.workStatus ===
+                  "Break"
+              ).length
+            }
+
           </h2>
 
-          <p
-            style={{
-              color: "white"
-            }}
-          >
+          <p>
             On Break
           </p>
-
-        </div>
-
-        {/* NOT WORKING */}
-        <div
-          style={{
-            background: "#1e293b",
-            padding: "30px",
-            borderRadius: "20px",
-            textAlign: "center"
-          }}
-        >
-
-          <h2
-            style={{
-              color: "#ef4444"
-            }}
-          >
-            {notWorkingCount}
-          </h2>
-
-          <p
-            style={{
-              color: "white"
-            }}
-          >
-            Not Working
-          </p>
-
-        </div>
-
-      </div>
-
-      {/* PIE CHART */}
-      <div
-        style={{
-          background: "#1e293b",
-          marginTop: "40px",
-          borderRadius: "20px",
-          padding: "30px"
-        }}
-      >
-
-        <h2
-          style={{
-            color: "white",
-            textAlign: "center"
-          }}
-        >
-          Attendance Analytics
-        </h2>
-
-        <div
-          style={{
-            width: "100%",
-            height: "400px"
-          }}
-        >
-
-          <ResponsiveContainer width="100%" height="100%">
-
-            <PieChart>
-
-              <Pie
-                data={pieData}
-                dataKey="value"
-                cx="50%"
-                cy="50%"
-                outerRadius={140}
-                label
-              >
-
-                {
-                  pieData.map(
-                    (entry, index) => (
-
-                      <Cell
-                        key={index}
-                        fill={
-                          COLORS[index]
-                        }
-                      />
-
-                    )
-                  )
-                }
-
-              </Pie>
-
-              <Tooltip />
-
-              <Legend />
-
-            </PieChart>
-
-          </ResponsiveContainer>
 
         </div>
 
       </div>
 
       {/* TABLE */}
+
       <div
         style={{
-          marginTop: "40px",
-          background: "white",
+          background: "#1e293b",
+          padding: "20px",
           borderRadius: "20px",
-          overflow: "hidden"
+          overflowX: "auto",
         }}
       >
 
         <table
-          className="admin-table"
           style={{
             width: "100%",
-            borderCollapse:
-              "collapse"
+            borderCollapse: "collapse",
+            background: "white",
+            color: "black",
           }}
         >
 
-          <thead
-            style={{
-              background: "#0f172a",
-              color: "white"
-            }}
-          >
+          <thead>
 
             <tr>
 
-              <th
-                style={{
-                  padding: "15px"
-                }}
-              >
+              <th style={thStyle}>
                 Name
               </th>
 
-              <th>Date</th>
+              <th style={thStyle}>
+                Date
+              </th>
 
-              <th>Clock In</th>
+              <th style={thStyle}>
+                Status
+              </th>
 
-              <th>Clock Out</th>
+              <th style={thStyle}>
+                Feeling
+              </th>
 
-              <th>Status</th>
+              <th style={thStyle}>
+                Clock In
+              </th>
 
-              <th>Hours</th>
+              <th style={thStyle}>
+                Clock Out
+              </th>
+
+              <th style={thStyle}>
+                Work Status
+              </th>
+
+              <th style={thStyle}>
+                Hours
+              </th>
+
+              <th style={thStyle}>
+                Progress
+              </th>
+
+              <th style={thStyle}>
+                Tasks
+              </th>
+
+              <th style={thStyle}>
+                Issues
+              </th>
+
+              <th style={thStyle}>
+                Tomorrow Plan
+              </th>
 
             </tr>
 
@@ -450,92 +234,61 @@ export default function AdminDashboard() {
 
           <tbody>
 
-            {
-              records.map(
-                (item, index) => (
+            {records.map((item) => (
 
-                  <tr
-                    key={index}
-                    style={{
-                      textAlign:
-                        "center"
-                    }}
-                  >
+              <tr key={item.id}>
 
-                    <td
-                      style={{
-                        padding:
-                          "15px"
-                      }}
-                    >
-                      {item.userName || "-"}
-                    </td>
+                <td style={tdStyle}>
+                  {item.name}
+                </td>
 
-                    <td>
-                      {item.date}
-                    </td>
+                <td style={tdStyle}>
+                  {item.date}
+                </td>
 
-                    <td>
-                      {item.clockIn}
-                    </td>
+                <td style={tdStyle}>
+                  {item.todayStatus}
+                </td>
 
-                    <td>
-                      {item.clockOut || "-"}
-                    </td>
+                <td style={tdStyle}>
+                  {item.feeling}
+                </td>
 
-                    <td>
+                <td style={tdStyle}>
+                  {item.clockIn}
+                </td>
 
-                      <span
-                        style={{
+                <td style={tdStyle}>
+                  {item.clockOut}
+                </td>
 
-                          background:
+                <td style={tdStyle}>
+                  {item.workStatus}
+                </td>
 
-                            item.status ===
-                            "Working"
+                <td style={tdStyle}>
+                  {item.workingHours} hrs
+                </td>
 
-                              ? "#22c55e"
+                <td style={tdStyle}>
+                  {item.progress}
+                </td>
 
-                              : item.status ===
-                                "Break"
+                <td style={tdStyle}>
+                  {item.tasks}
+                </td>
 
-                              ? "#f59e0b"
+                <td style={tdStyle}>
+                  {item.issues}
+                </td>
 
-                              : item.status ===
-                                "Completed"
+                <td style={tdStyle}>
+                  {item.tomorrowPlan}
+                </td>
 
-                              ? "#3b82f6"
+              </tr>
 
-                              : "#ef4444",
-
-                          color:
-                            "white",
-
-                          padding:
-                            "8px 15px",
-
-                          borderRadius:
-                            "20px",
-
-                          fontWeight:
-                            "bold"
-                        }}
-                      >
-
-                        {item.status}
-
-                      </span>
-
-                    </td>
-
-                    <td>
-                      {item.workingHours || calculateHours(item.clockIn, item.clockOut)}
-                    </td>
-
-                  </tr>
-
-                )
-              )
-            }
+            ))}
 
           </tbody>
 
@@ -546,3 +299,34 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+const cardStyle = {
+
+  background: "#1e293b",
+
+  padding: "25px",
+
+  borderRadius: "20px",
+
+  textAlign: "center",
+};
+
+const thStyle = {
+
+  border: "1px solid #ccc",
+
+  padding: "12px",
+
+  background: "#0f172a",
+
+  color: "white",
+};
+
+const tdStyle = {
+
+  border: "1px solid #ccc",
+
+  padding: "10px",
+
+  textAlign: "center",
+};
