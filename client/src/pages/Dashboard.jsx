@@ -1,39 +1,45 @@
-import React, {
-  useEffect,
-  useState
-} from "react";
-
+import { useEffect, useState } from "react";
 import axios from "axios";
-
 import {
   FaPlay,
   FaPause,
-  FaStop,
+  FaSignOutAlt,
   FaCheckCircle,
-  FaSignOutAlt
 } from "react-icons/fa";
 
 export default function Dashboard() {
 
+  // =========================
   // BACKEND URL
-  const baseURL =
-    import.meta.env.VITE_API_BASE_URL ||
-    (import.meta.env.MODE === "development"
-      ? "http://localhost:5000"
-      : "https://attendance-backend-32mo.onrender.com");
+  // =========================
 
-  // USER
-  const user =
-    JSON.parse(
-      localStorage.getItem("user")
-    );
+  const API =
+    "https://your-backend-url.onrender.com";
 
+  // =========================
   // STATES
-  const [todayStatus, setTodayStatus] =
+  // =========================
+
+  const [attendance, setAttendance] =
+    useState([]);
+
+  const [status, setStatus] =
     useState("Office Work");
 
   const [feeling, setFeeling] =
     useState("Happy 😊");
+
+  const [currentStatus, setCurrentStatus] =
+    useState("Completed");
+
+  const [clockIn, setClockIn] =
+    useState("");
+
+  const [clockOut, setClockOut] =
+    useState("");
+
+  const [workingHours, setWorkingHours] =
+    useState("");
 
   const [progress, setProgress] =
     useState("");
@@ -47,35 +53,20 @@ export default function Dashboard() {
   const [tomorrowPlan, setTomorrowPlan] =
     useState("");
 
-  const [currentStatus, setCurrentStatus] =
-    useState("Not Working");
+  // =========================
+  // FETCH DATA
+  // =========================
 
-  const [records, setRecords] =
-    useState([]);
-
-  // FETCH RECORDS
-  useEffect(() => {
-
-    fetchRecords();
-
-  }, []);
-
-  const fetchRecords = async () => {
+  const fetchAttendance = async () => {
 
     try {
 
-      const res = await axios.get(
-        `${baseURL}/api/attendance/all`
-      );
-
-      const userRecords =
-        res.data.filter(
-          item =>
-            item.userName ===
-            (user?.name || "Akash")
+      const response =
+        await axios.get(
+          `${API}/attendance`
         );
 
-      setRecords(userRecords);
+      setAttendance(response.data);
 
     } catch (error) {
 
@@ -83,53 +74,56 @@ export default function Dashboard() {
     }
   };
 
-  // START DAY
-  const startDay = async () => {
+  useEffect(() => {
 
-    const newRecord = {
+    fetchAttendance();
 
-      userName:
-        user?.name || "Akash",
+  }, []);
 
-      date:
-        new Date().toLocaleDateString(),
+  // =========================
+  // SAVE DATA
+  // =========================
 
-      todayStatus,
-
-      feeling,
-
-      progress,
-
-      tasks,
-
-      issues,
-
-      tomorrowPlan,
-
-      clockIn:
-        new Date().toLocaleTimeString(),
-
-      clockOut: "",
-
-      status: "Working",
-
-      workingHours: "-"
-    };
+  const saveAttendance = async (
+    updatedStatus
+  ) => {
 
     try {
 
+      const data = {
+
+        name: "Akash",
+
+        date:
+          new Date().toLocaleDateString(),
+
+        status,
+
+        feeling,
+
+        currentStatus: updatedStatus,
+
+        clockIn,
+
+        clockOut,
+
+        workingHours,
+
+        progress,
+
+        tasks,
+
+        issues,
+
+        tomorrowPlan,
+      };
+
       await axios.post(
-        `${baseURL}/api/attendance/add`,
-        newRecord
+        `${API}/attendance`,
+        data
       );
 
-      alert(
-        "Day Started Successfully"
-      );
-
-      setCurrentStatus("Working");
-
-      fetchRecords();
+      fetchAttendance();
 
     } catch (error) {
 
@@ -139,90 +133,83 @@ export default function Dashboard() {
     }
   };
 
-  // BREAK
-  const takeBreak = () => {
+  // =========================
+  // START DAY
+  // =========================
 
-    setCurrentStatus("Break");
+  const handleStartDay = () => {
 
-    alert("Break Started");
-  };
+    const time =
+      new Date().toLocaleTimeString();
 
-  // RESUME
-  const resumeWork = () => {
+    setClockIn(time);
 
     setCurrentStatus("Working");
 
-    alert("Work Resumed");
+    saveAttendance("Working");
   };
 
+  // =========================
+  // BREAK
+  // =========================
+
+  const handleBreak = () => {
+
+    setCurrentStatus("Break");
+
+    saveAttendance("Break");
+  };
+
+  // =========================
+  // RESUME
+  // =========================
+
+  const handleResume = () => {
+
+    setCurrentStatus("Working");
+
+    saveAttendance("Working");
+  };
+
+  // =========================
   // CLOCK OUT
-  const clockOut = async () => {
+  // =========================
 
-    try {
+  const handleClockOut = () => {
 
-      const lastRecord =
-        records[records.length - 1];
+    const out =
+      new Date().toLocaleTimeString();
 
-      if (!lastRecord) {
+    setClockOut(out);
 
-        alert("No active record found");
+    const inTime =
+      new Date(`1970-01-01 ${clockIn}`);
 
-        return;
-      }
+    const outTime =
+      new Date(`1970-01-01 ${out}`);
 
-      const clockOutTime =
-        new Date().toLocaleTimeString();
+    const diff =
+      (outTime - inTime) /
+      (1000 * 60 * 60);
 
-      // CALCULATE HOURS
-      const inTime =
-        new Date(
-          `1970-01-01 ${lastRecord.clockIn}`
-        );
+    setWorkingHours(
+      diff.toFixed(2)
+    );
 
-      const outTime =
-        new Date(
-          `1970-01-01 ${clockOutTime}`
-        );
+    setCurrentStatus("Completed");
 
-      const diff =
-        (outTime - inTime) /
-        (1000 * 60 * 60);
+    setTimeout(() => {
 
-      const workingHours =
-        diff.toFixed(2) + " hrs";
+      saveAttendance("Completed");
 
-      await axios.put(
-
-        `${baseURL}/api/attendance/update/${lastRecord._id}`,
-
-        {
-
-          clockOut:
-            clockOutTime,
-
-          status:
-            "Completed",
-
-          workingHours
-        }
-      );
-
-      alert("Day Completed");
-
-      setCurrentStatus("Completed");
-
-      fetchRecords();
-
-    } catch (error) {
-
-      console.log(error);
-
-      alert("Clock out failed");
-    }
+    }, 500);
   };
 
+  // =========================
   // LOGOUT
-  const logout = () => {
+  // =========================
+
+  const handleLogout = () => {
 
     localStorage.removeItem("user");
 
@@ -233,47 +220,38 @@ export default function Dashboard() {
 
     <div
       style={{
-        minHeight: "100vh",
         background: "#020617",
-        padding: "30px"
+        minHeight: "100vh",
+        padding: "40px",
+        color: "white",
       }}
     >
 
       {/* HEADER */}
+
       <div
         style={{
           display: "flex",
           justifyContent:
             "space-between",
-          alignItems: "center"
+          alignItems: "center",
         }}
       >
 
         <div>
 
-          <h1
-            style={{
-              color: "white",
-              fontSize: "45px"
-            }}
-          >
-            Welcome {
-              user?.name || "Akash"
-            }
+          <h1>
+            Welcome Akash
           </h1>
 
-          <p
-            style={{
-              color: "white"
-            }}
-          >
+          <p>
             Employee Attendance Dashboard
           </p>
 
         </div>
 
         <button
-          onClick={logout}
+          onClick={handleLogout}
           style={{
             background: "#ef4444",
             color: "white",
@@ -282,39 +260,40 @@ export default function Dashboard() {
               "12px 25px",
             borderRadius: "10px",
             cursor: "pointer",
-            fontWeight: "bold"
+            fontWeight: "bold",
           }}
         >
+
           Logout
+
         </button>
 
       </div>
 
-      {/* STATUS BOX */}
+      {/* STATUS CARD */}
+
       <div
         style={{
           background: "#1e293b",
+          marginTop: "30px",
           padding: "30px",
-          borderRadius: "25px",
-          marginTop: "40px"
+          borderRadius: "20px",
         }}
       >
 
-        <h2
+        <h1
           style={{
-            color:
-              currentStatus === "Working"
-                ? "#22c55e"
-                : currentStatus === "Break"
-                ? "#f59e0b"
-                : currentStatus === "Completed"
-                ? "#3b82f6"
-                : "#ef4444",
-
             display: "flex",
             alignItems: "center",
             gap: "10px",
-            fontSize: "40px"
+            color:
+              currentStatus ===
+              "Break"
+                ? "#f59e0b"
+                : currentStatus ===
+                  "Completed"
+                ? "#ef4444"
+                : "#22c55e",
           }}
         >
 
@@ -322,29 +301,29 @@ export default function Dashboard() {
 
           {currentStatus}
 
-        </h2>
+        </h1>
 
-        {/* SELECTS */}
+        {/* DROPDOWNS */}
+
         <div
           style={{
             display: "flex",
             gap: "20px",
             marginTop: "20px",
-            flexWrap: "wrap"
           }}
         >
 
           <select
-            value={todayStatus}
+            value={status}
             onChange={(e) =>
-              setTodayStatus(
+              setStatus(
                 e.target.value
               )
             }
             style={{
-              padding: "15px",
+              padding: "12px",
               borderRadius: "10px",
-              width: "250px"
+              width: "250px",
             }}
           >
 
@@ -366,9 +345,9 @@ export default function Dashboard() {
               )
             }
             style={{
-              padding: "15px",
+              padding: "12px",
               borderRadius: "10px",
-              width: "250px"
+              width: "250px",
             }}
           >
 
@@ -389,9 +368,10 @@ export default function Dashboard() {
         </div>
 
         {/* TEXTAREAS */}
+
         <div
           style={{
-            marginTop: "30px"
+            marginTop: "20px",
           }}
         >
 
@@ -403,7 +383,15 @@ export default function Dashboard() {
                 e.target.value
               )
             }
-            style={textareaStyle}
+            style={{
+              width: "100%",
+              height: "80px",
+              marginBottom:
+                "15px",
+              borderRadius:
+                "10px",
+              padding: "10px",
+            }}
           />
 
           <textarea
@@ -414,7 +402,15 @@ export default function Dashboard() {
                 e.target.value
               )
             }
-            style={textareaStyle}
+            style={{
+              width: "100%",
+              height: "80px",
+              marginBottom:
+                "15px",
+              borderRadius:
+                "10px",
+              padding: "10px",
+            }}
           />
 
           <textarea
@@ -425,7 +421,15 @@ export default function Dashboard() {
                 e.target.value
               )
             }
-            style={textareaStyle}
+            style={{
+              width: "100%",
+              height: "80px",
+              marginBottom:
+                "15px",
+              borderRadius:
+                "10px",
+              padding: "10px",
+            }}
           />
 
           <textarea
@@ -436,63 +440,117 @@ export default function Dashboard() {
                 e.target.value
               )
             }
-            style={textareaStyle}
+            style={{
+              width: "100%",
+              height: "80px",
+              borderRadius:
+                "10px",
+              padding: "10px",
+            }}
           />
 
         </div>
 
         {/* BUTTONS */}
+
         <div
           style={{
             display: "flex",
             gap: "20px",
-            marginTop: "30px",
-            flexWrap: "wrap"
+            marginTop: "25px",
           }}
         >
 
           <button
-            onClick={startDay}
+            onClick={
+              handleStartDay
+            }
             style={{
-              ...buttonStyle,
-              background: "#22c55e"
+              background: "#22c55e",
+              color: "white",
+              border: "none",
+              padding:
+                "15px 30px",
+              borderRadius:
+                "12px",
+              cursor: "pointer",
+              fontWeight: "bold",
             }}
           >
+
             <FaPlay />
-            Start Day
+
+            {" "}Start Day
+
           </button>
 
           <button
-            onClick={takeBreak}
+            onClick={
+              handleBreak
+            }
             style={{
-              ...buttonStyle,
-              background: "#f59e0b"
+              background: "#f59e0b",
+              color: "white",
+              border: "none",
+              padding:
+                "15px 30px",
+              borderRadius:
+                "12px",
+              cursor: "pointer",
+              fontWeight: "bold",
             }}
           >
+
             <FaPause />
-            Break
+
+            {" "}Break
+
           </button>
 
           <button
-            onClick={resumeWork}
+            onClick={
+              handleResume
+            }
             style={{
-              ...buttonStyle,
-              background: "#3b82f6"
+              background: "#3b82f6",
+              color: "white",
+              border: "none",
+              padding:
+                "15px 30px",
+              borderRadius:
+                "12px",
+              cursor: "pointer",
+              fontWeight: "bold",
             }}
           >
+
             <FaPlay />
-            Resume
+
+            {" "}Resume
+
           </button>
 
           <button
-            onClick={clockOut}
+            onClick={
+              handleClockOut
+            }
             style={{
-              ...buttonStyle,
-              background: "#ef4444"
+              background: "#ef4444",
+              color: "white",
+              border: "none",
+              padding:
+                "15px 30px",
+              borderRadius:
+                "12px",
+              cursor: "pointer",
+              fontWeight: "bold",
             }}
           >
-            <FaStop />
-            Clock Out
+
+            <FaSignOutAlt />
+
+            {" "}Clock Out
+
           </button>
 
         </div>
@@ -500,53 +558,41 @@ export default function Dashboard() {
       </div>
 
       {/* TABLE */}
+
       <div
         style={{
           marginTop: "40px",
-          background: "white",
+          background: "#111827",
           borderRadius: "20px",
-          overflow: "hidden"
+          overflow: "hidden",
         }}
       >
 
         <table
-          style={{
-            width: "100%",
-            borderCollapse:
-              "collapse"
-          }}
+          width="100%"
+          cellPadding="20"
         >
 
           <thead
             style={{
-              background: "#0f172a",
-              color: "white"
+              background:
+                "#0f172a",
             }}
           >
 
             <tr>
 
-              <th style={thStyle}>
-                Date
-              </th>
+              <th>Date</th>
 
-              <th style={thStyle}>
-                Status
-              </th>
+              <th>Status</th>
 
-              <th style={thStyle}>
-                Feeling
-              </th>
+              <th>Feeling</th>
 
-              <th style={thStyle}>
-                Clock In
-              </th>
+              <th>Clock In</th>
 
-              <th style={thStyle}>
-                Clock Out
-              </th>
+              <th>Clock Out</th>
 
-              <th style={thStyle}>
+              <th>
                 Working Hours
               </th>
 
@@ -556,49 +602,47 @@ export default function Dashboard() {
 
           <tbody>
 
-            {
-              records.map(
-                (item, index) => (
+            {attendance.map(
+              (item, index) => (
 
-                  <tr
-                    key={index}
-                    style={{
-                      textAlign:
-                        "center"
-                    }}
-                  >
+                <tr
+                  key={index}
+                  style={{
+                    textAlign:
+                      "center",
+                  }}
+                >
 
-                    <td style={tdStyle}>
-                      {item.date}
-                    </td>
+                  <td>
+                    {item.date}
+                  </td>
 
-                    <td style={tdStyle}>
-                      {item.todayStatus}
-                    </td>
+                  <td>
+                    {item.status}
+                  </td>
 
-                    <td style={tdStyle}>
-                      {item.feeling}
-                    </td>
+                  <td>
+                    {item.feeling}
+                  </td>
 
-                    <td style={tdStyle}>
-                      {item.clockIn}
-                    </td>
+                  <td>
+                    {item.clockIn}
+                  </td>
 
-                    <td style={tdStyle}>
-                      {item.clockOut || "-"}
-                    </td>
+                  <td>
+                    {item.clockOut}
+                  </td>
 
-                    <td style={tdStyle}>
-                      {
-                        item.workingHours
-                      }
-                    </td>
+                  <td>
+                    {
+                      item.workingHours
+                    }{" "}
+                    hrs
+                  </td>
 
-                  </tr>
-
-                )
+                </tr>
               )
-            }
+            )}
 
           </tbody>
 
@@ -609,41 +653,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
-// STYLES
-
-const textareaStyle = {
-
-  width: "100%",
-  minHeight: "90px",
-  marginBottom: "20px",
-  borderRadius: "10px",
-  padding: "15px",
-  fontSize: "16px"
-};
-
-const buttonStyle = {
-
-  border: "none",
-  color: "white",
-  padding: "15px 25px",
-  borderRadius: "12px",
-  fontWeight: "bold",
-  cursor: "pointer",
-  display: "flex",
-  alignItems: "center",
-  gap: "10px",
-  fontSize: "16px"
-};
-
-const thStyle = {
-
-  padding: "15px"
-};
-
-const tdStyle = {
-
-  padding: "15px",
-  borderBottom:
-    "1px solid #e5e7eb"
-};
