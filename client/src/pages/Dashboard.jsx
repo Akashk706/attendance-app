@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+
 import {
   FaPlay,
   FaPause,
@@ -38,7 +39,9 @@ export default function Dashboard() {
   useEffect(() => {
 
     const saved =
-      JSON.parse(localStorage.getItem("attendance")) || [];
+      JSON.parse(
+        localStorage.getItem("attendance")
+      ) || [];
 
     setRecords(saved);
 
@@ -56,19 +59,31 @@ export default function Dashboard() {
 
   const startDay = () => {
 
+    if (!todayStatus || !feeling) {
+
+      alert(
+        "Please select today's status and feeling"
+      );
+
+      return;
+    }
+
     const newRecord = {
 
       id: Date.now(),
 
-      name: user?.name || "Akash",
+      name:
+        user?.name || "Akash",
 
-      date: new Date().toLocaleDateString(),
+      date:
+        new Date().toLocaleDateString(),
 
       todayStatus,
 
       feeling,
 
-      clockIn: new Date().toLocaleTimeString(),
+      clockIn:
+        new Date().toLocaleTimeString(),
 
       clockOut: "-",
 
@@ -85,20 +100,30 @@ export default function Dashboard() {
       tomorrowPlan,
     };
 
-    const updated =
-      [newRecord, ...records];
+    const updated = [
+      newRecord,
+      ...records,
+    ];
 
     saveData(updated);
 
     setStatus("Working");
+
+    alert("Day Started Successfully");
   };
 
   const takeBreak = () => {
 
     const updated =
       records.map((item, index) =>
+
         index === 0
-          ? { ...item, workStatus: "Break" }
+
+          ? {
+              ...item,
+              workStatus: "Break",
+            }
+
           : item
       );
 
@@ -111,8 +136,14 @@ export default function Dashboard() {
 
     const updated =
       records.map((item, index) =>
+
         index === 0
-          ? { ...item, workStatus: "Working" }
+
+          ? {
+              ...item,
+              workStatus: "Working",
+            }
+
           : item
       );
 
@@ -161,6 +192,35 @@ export default function Dashboard() {
     saveData(updated);
 
     setStatus("Completed");
+
+    alert("Clocked Out Successfully");
+  };
+
+  const logout = () => {
+
+    localStorage.removeItem("user");
+
+    window.location.href = "/";
+  };
+
+  const thStyle = {
+
+    border: "1px solid #ccc",
+
+    padding: "12px",
+
+    background: "#0f172a",
+
+    color: "white",
+  };
+
+  const tdStyle = {
+
+    border: "1px solid #ccc",
+
+    padding: "10px",
+
+    textAlign: "center",
   };
 
   return (
@@ -174,23 +234,56 @@ export default function Dashboard() {
       }}
     >
 
-      <h1
-        style={{
-          fontSize: "42px",
-          marginBottom: "10px",
-        }}
-      >
-        Welcome {user?.name || "Akash"}
-      </h1>
+      {/* HEADER */}
 
-      <p
+      <div
         style={{
-          marginBottom: "40px",
-          color: "#cbd5e1",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "30px",
         }}
       >
-        Employee Attendance Dashboard
-      </p>
+
+        <div>
+
+          <h1
+            style={{
+              fontSize: "42px",
+            }}
+          >
+            Welcome {user?.name || "Akash"}
+          </h1>
+
+          <p
+            style={{
+              color: "#cbd5e1",
+            }}
+          >
+            Employee Attendance Dashboard
+          </p>
+
+        </div>
+
+        <button
+          onClick={logout}
+          style={{
+            background: "#ef4444",
+            color: "white",
+            border: "none",
+            padding: "12px 20px",
+            borderRadius: "10px",
+            cursor: "pointer",
+          }}
+        >
+
+          Logout
+
+        </button>
+
+      </div>
+
+      {/* STATUS CARD */}
 
       <div
         style={{
@@ -221,19 +314,24 @@ export default function Dashboard() {
 
         </h2>
 
+        {/* SELECTS */}
+
         <div
           style={{
             display: "flex",
             gap: "20px",
             marginTop: "25px",
             marginBottom: "20px",
+            flexWrap: "wrap",
           }}
         >
 
           <select
             value={todayStatus}
             onChange={(e) =>
-              setTodayStatus(e.target.value)
+              setTodayStatus(
+                e.target.value
+              )
             }
             style={{
               padding: "12px",
@@ -259,7 +357,9 @@ export default function Dashboard() {
           <select
             value={feeling}
             onChange={(e) =>
-              setFeeling(e.target.value)
+              setFeeling(
+                e.target.value
+              )
             }
             style={{
               padding: "12px",
@@ -288,11 +388,15 @@ export default function Dashboard() {
 
         </div>
 
+        {/* TEXTAREAS */}
+
         <textarea
           placeholder="Today's Progress"
           value={progress}
           onChange={(e) =>
-            setProgress(e.target.value)
+            setProgress(
+              e.target.value
+            )
           }
           style={{
             width: "100%",
@@ -307,7 +411,9 @@ export default function Dashboard() {
           placeholder="Tasks Completed"
           value={tasks}
           onChange={(e) =>
-            setTasks(e.target.value)
+            setTasks(
+              e.target.value
+            )
           }
           style={{
             width: "100%",
@@ -322,7 +428,9 @@ export default function Dashboard() {
           placeholder="Issues Faced"
           value={issues}
           onChange={(e) =>
-            setIssues(e.target.value)
+            setIssues(
+              e.target.value
+            )
           }
           style={{
             width: "100%",
@@ -337,7 +445,9 @@ export default function Dashboard() {
           placeholder="Tomorrow Plan"
           value={tomorrowPlan}
           onChange={(e) =>
-            setTomorrowPlan(e.target.value)
+            setTomorrowPlan(
+              e.target.value
+            )
           }
           style={{
             width: "100%",
@@ -347,6 +457,8 @@ export default function Dashboard() {
             padding: "10px",
           }}
         />
+
+        {/* BUTTONS */}
 
         <div
           style={{
@@ -429,6 +541,115 @@ export default function Dashboard() {
           </button>
 
         </div>
+
+      </div>
+
+      {/* HISTORY TABLE */}
+
+      <div
+        style={{
+          marginTop: "40px",
+          background: "#1e293b",
+          padding: "20px",
+          borderRadius: "20px",
+          overflowX: "auto",
+        }}
+      >
+
+        <h2
+          style={{
+            marginBottom: "20px",
+          }}
+        >
+          Attendance History
+        </h2>
+
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            background: "white",
+            color: "black",
+          }}
+        >
+
+          <thead>
+
+            <tr>
+
+              <th style={thStyle}>
+                Date
+              </th>
+
+              <th style={thStyle}>
+                Status
+              </th>
+
+              <th style={thStyle}>
+                Feeling
+              </th>
+
+              <th style={thStyle}>
+                Clock In
+              </th>
+
+              <th style={thStyle}>
+                Clock Out
+              </th>
+
+              <th style={thStyle}>
+                Work Status
+              </th>
+
+              <th style={thStyle}>
+                Hours
+              </th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            {records.map((item) => (
+
+              <tr key={item.id}>
+
+                <td style={tdStyle}>
+                  {item.date}
+                </td>
+
+                <td style={tdStyle}>
+                  {item.todayStatus}
+                </td>
+
+                <td style={tdStyle}>
+                  {item.feeling}
+                </td>
+
+                <td style={tdStyle}>
+                  {item.clockIn}
+                </td>
+
+                <td style={tdStyle}>
+                  {item.clockOut}
+                </td>
+
+                <td style={tdStyle}>
+                  {item.workStatus}
+                </td>
+
+                <td style={tdStyle}>
+                  {item.workingHours} hrs
+                </td>
+
+              </tr>
+
+            ))}
+
+          </tbody>
+
+        </table>
 
       </div>
 
