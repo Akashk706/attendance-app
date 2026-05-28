@@ -1,34 +1,21 @@
 import { useEffect, useState } from "react";
-
-import axios from "axios";
-
-import { useNavigate } from "react-router-dom";
-
 import {
-  FaPowerOff,
-  FaPlayCircle,
-  FaCoffee,
+  FaPlay,
+  FaPause,
+  FaSignOutAlt,
   FaCheckCircle,
-  FaUserClock
 } from "react-icons/fa";
 
 export default function Dashboard() {
 
-  const navigate = useNavigate();
-
-  const user = JSON.parse(
-    localStorage.getItem("user")
-  );
-
-  // BACKEND URL
-  const baseURL =
-    import.meta.env.VITE_API_BASE_URL ||
-    (import.meta.env.MODE === "development"
-      ? "http://localhost:5000"
-      : "https://attendance-backend-32mo.onrender.com");
+  const user =
+    JSON.parse(localStorage.getItem("user"));
 
   const [records, setRecords] =
     useState([]);
+
+  const [status, setStatus] =
+    useState("Working");
 
   const [todayStatus, setTodayStatus] =
     useState("");
@@ -48,148 +35,133 @@ export default function Dashboard() {
   const [tomorrowPlan, setTomorrowPlan] =
     useState("");
 
-  // CHECK LOGIN
   useEffect(() => {
 
-    if (!user) {
+    const saved =
+      JSON.parse(localStorage.getItem("attendance")) || [];
 
-      navigate("/");
-    }
-
-  }, [navigate, user]);
-
-  // FETCH ATTENDANCE
-  useEffect(() => {
-
-    fetchAttendance();
+    setRecords(saved);
 
   }, []);
 
-  const fetchAttendance = async () => {
+  const saveData = (updated) => {
 
-    if (!user) return;
+    setRecords(updated);
 
-    try {
-
-      const res = await axios.get(
-        `${baseURL}/api/attendance/all`
-      );
-
-      const filtered = res.data.filter(
-        item => item.userId === user.id
-      );
-
-      setRecords(filtered.reverse());
-
-    } catch (error) {
-
-      console.error(error);
-    }
+    localStorage.setItem(
+      "attendance",
+      JSON.stringify(updated)
+    );
   };
 
-  // CLOCK IN
-  const clockIn = async () => {
+  const startDay = () => {
 
-    try {
+    const newRecord = {
 
-      await axios.post(
-        `${baseURL}/api/attendance/clock-in`,
-        {
-          userId: user.id,
-          userName: user.name,
-          todayStatus,
-          feeling
+      id: Date.now(),
+
+      name: user?.name || "Akash",
+
+      date: new Date().toLocaleDateString(),
+
+      todayStatus,
+
+      feeling,
+
+      clockIn: new Date().toLocaleTimeString(),
+
+      clockOut: "-",
+
+      workStatus: "Working",
+
+      workingHours: 0,
+
+      progress,
+
+      tasks,
+
+      issues,
+
+      tomorrowPlan,
+    };
+
+    const updated =
+      [newRecord, ...records];
+
+    saveData(updated);
+
+    setStatus("Working");
+  };
+
+  const takeBreak = () => {
+
+    const updated =
+      records.map((item, index) =>
+        index === 0
+          ? { ...item, workStatus: "Break" }
+          : item
+      );
+
+    saveData(updated);
+
+    setStatus("Break");
+  };
+
+  const resumeWork = () => {
+
+    const updated =
+      records.map((item, index) =>
+        index === 0
+          ? { ...item, workStatus: "Working" }
+          : item
+      );
+
+    saveData(updated);
+
+    setStatus("Working");
+  };
+
+  const clockOut = () => {
+
+    const updated =
+      records.map((item, index) => {
+
+        if (index === 0) {
+
+          const start =
+            new Date(
+              `${item.date} ${item.clockIn}`
+            );
+
+          const end =
+            new Date();
+
+          const hours =
+            (
+              (end - start) /
+              (1000 * 60 * 60)
+            ).toFixed(2);
+
+          return {
+
+            ...item,
+
+            clockOut:
+              new Date().toLocaleTimeString(),
+
+            workStatus: "Completed",
+
+            workingHours: hours,
+          };
         }
-      );
 
-      fetchAttendance();
+        return item;
+      });
 
-    } catch (error) {
+    saveData(updated);
 
-      console.error(error);
-    }
+    setStatus("Completed");
   };
-
-  // CLOCK OUT
-  const clockOut = async (id) => {
-
-    try {
-
-      await axios.post(
-        `${baseURL}/api/attendance/clock-out`,
-        {
-          attendanceId: id,
-          progress,
-          tasks,
-          issues,
-          tomorrowPlan
-        }
-      );
-
-      fetchAttendance();
-
-    } catch (error) {
-
-      console.error(error);
-    }
-  };
-
-  // TAKE BREAK
-  const takeBreak = async (id) => {
-
-    try {
-
-      await axios.post(
-        `${baseURL}/api/attendance/update-status`,
-        {
-          attendanceId: id,
-          status: "Break"
-        }
-      );
-
-      fetchAttendance();
-
-    } catch (error) {
-
-      console.error(error);
-    }
-  };
-
-  // RESUME WORK
-  const resumeWork = async (id) => {
-
-    try {
-
-      await axios.post(
-        `${baseURL}/api/attendance/update-status`,
-        {
-          attendanceId: id,
-          status: "Working"
-        }
-      );
-
-      fetchAttendance();
-
-    } catch (error) {
-
-      console.error(error);
-    }
-  };
-
-  // LOGOUT
-  const logout = () => {
-
-    localStorage.removeItem("user");
-
-    navigate("/");
-  };
-
-  // ACTIVE RECORD
-  const activeRecord = records.find(
-    item =>
-      item.status === "Working" ||
-      item.status === "Break"
-  );
 
   return (
 
@@ -197,446 +169,269 @@ export default function Dashboard() {
       style={{
         minHeight: "100vh",
         background: "#020617",
+        color: "white",
         padding: "40px",
-        color: "white"
       }}
     >
 
-      {/* HEADER */}
+      <h1
+        style={{
+          fontSize: "42px",
+          marginBottom: "10px",
+        }}
+      >
+        Welcome {user?.name || "Akash"}
+      </h1>
+
+      <p
+        style={{
+          marginBottom: "40px",
+          color: "#cbd5e1",
+        }}
+      >
+        Employee Attendance Dashboard
+      </p>
+
       <div
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap"
+          background: "#1e293b",
+          padding: "30px",
+          borderRadius: "20px",
         }}
       >
 
-        <div>
-
-          <h1
-            style={{
-              fontSize: "45px"
-            }}
-          >
-            Welcome {user?.name}
-          </h1>
-
-          <p
-            style={{
-              color: "#cbd5e1"
-            }}
-          >
-            Employee Attendance Dashboard
-          </p>
-
-        </div>
-
-        <button
-          onClick={logout}
+        <h2
           style={{
-            padding: "12px 25px",
-            background: "#ef4444",
-            color: "white",
-            border: "none",
-            borderRadius: "10px",
-            cursor: "pointer",
+            color:
+              status === "Working"
+                ? "#22c55e"
+                : status === "Break"
+                ? "#f59e0b"
+                : "#ef4444",
+
             display: "flex",
             alignItems: "center",
             gap: "10px",
-            fontWeight: "bold"
           }}
         >
 
-          <FaPowerOff />
+          <FaCheckCircle />
 
-          Logout
+          {status}
 
-        </button>
-
-      </div>
-
-      {/* START DAY */}
-      {!activeRecord && (
+        </h2>
 
         <div
           style={{
-            background: "#1e293b",
-            marginTop: "40px",
-            padding: "35px",
-            borderRadius: "20px",
-            textAlign: "center"
+            display: "flex",
+            gap: "20px",
+            marginTop: "25px",
+            marginBottom: "20px",
           }}
         >
 
-          <FaUserClock
-            size={60}
-            color="#38bdf8"
-          />
-
-          <h2
-            style={{
-              marginTop: "20px"
-            }}
-          >
-            Yesterday Working Hours:
-            {
-              records[1]?.workingHours || "0 hrs"
+          <select
+            value={todayStatus}
+            onChange={(e) =>
+              setTodayStatus(e.target.value)
             }
-          </h2>
-
-          <div
             style={{
-              marginTop: "30px",
-              display: "flex",
-              justifyContent: "center",
-              gap: "20px",
-              flexWrap: "wrap"
+              padding: "12px",
+              width: "250px",
+              borderRadius: "10px",
             }}
           >
 
-            <select
-              value={todayStatus}
-              onChange={(e) =>
-                setTodayStatus(e.target.value)
-              }
-              style={selectStyle}
-            >
+            <option value="">
+              Select Today Status
+            </option>
 
-              <option value="">
-                Select Today Status
-              </option>
+            <option>
+              Office Work
+            </option>
 
-              <option>
-                Office Work
-              </option>
+            <option>
+              Work From Home
+            </option>
 
-              <option>
-                Work From Home
-              </option>
+          </select>
 
-              <option>
-                Half Day
-              </option>
+          <select
+            value={feeling}
+            onChange={(e) =>
+              setFeeling(e.target.value)
+            }
+            style={{
+              padding: "12px",
+              width: "250px",
+              borderRadius: "10px",
+            }}
+          >
 
-            </select>
+            <option value="">
+              Today Feeling
+            </option>
 
-            <select
-              value={feeling}
-              onChange={(e) =>
-                setFeeling(e.target.value)
-              }
-              style={selectStyle}
-            >
+            <option>
+              Happy 😊
+            </option>
 
-              <option value="">
-                Today Feeling
-              </option>
+            <option>
+              Normal 🙂
+            </option>
 
-              <option>
-                Happy 😊
-              </option>
+            <option>
+              Tired 😴
+            </option>
 
-              <option>
-                Normal 🙂
-              </option>
+          </select>
 
-              <option>
-                Sad 😔
-              </option>
+        </div>
 
-            </select>
+        <textarea
+          placeholder="Today's Progress"
+          value={progress}
+          onChange={(e) =>
+            setProgress(e.target.value)
+          }
+          style={{
+            width: "100%",
+            height: "80px",
+            marginBottom: "15px",
+            borderRadius: "10px",
+            padding: "10px",
+          }}
+        />
 
-          </div>
+        <textarea
+          placeholder="Tasks Completed"
+          value={tasks}
+          onChange={(e) =>
+            setTasks(e.target.value)
+          }
+          style={{
+            width: "100%",
+            height: "80px",
+            marginBottom: "15px",
+            borderRadius: "10px",
+            padding: "10px",
+          }}
+        />
+
+        <textarea
+          placeholder="Issues Faced"
+          value={issues}
+          onChange={(e) =>
+            setIssues(e.target.value)
+          }
+          style={{
+            width: "100%",
+            height: "80px",
+            marginBottom: "15px",
+            borderRadius: "10px",
+            padding: "10px",
+          }}
+        />
+
+        <textarea
+          placeholder="Tomorrow Plan"
+          value={tomorrowPlan}
+          onChange={(e) =>
+            setTomorrowPlan(e.target.value)
+          }
+          style={{
+            width: "100%",
+            height: "80px",
+            marginBottom: "25px",
+            borderRadius: "10px",
+            padding: "10px",
+          }}
+        />
+
+        <div
+          style={{
+            display: "flex",
+            gap: "15px",
+            flexWrap: "wrap",
+          }}
+        >
 
           <button
-            onClick={clockIn}
+            onClick={startDay}
             style={{
-              marginTop: "30px",
-              padding: "14px 35px",
-              background: "#10b981",
-              border: "none",
-              borderRadius: "12px",
+              background: "#22c55e",
               color: "white",
+              border: "none",
+              padding: "12px 20px",
+              borderRadius: "10px",
               cursor: "pointer",
-              fontSize: "16px",
-              fontWeight: "bold",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "10px"
             }}
           >
 
-            <FaPlayCircle />
+            <FaPlay />
 
-            Start Day
+            {" "}Start Day
+
+          </button>
+
+          <button
+            onClick={takeBreak}
+            style={{
+              background: "#f59e0b",
+              color: "white",
+              border: "none",
+              padding: "12px 20px",
+              borderRadius: "10px",
+              cursor: "pointer",
+            }}
+          >
+
+            <FaPause />
+
+            {" "}Break
+
+          </button>
+
+          <button
+            onClick={resumeWork}
+            style={{
+              background: "#3b82f6",
+              color: "white",
+              border: "none",
+              padding: "12px 20px",
+              borderRadius: "10px",
+              cursor: "pointer",
+            }}
+          >
+
+            <FaPlay />
+
+            {" "}Resume
+
+          </button>
+
+          <button
+            onClick={clockOut}
+            style={{
+              background: "#ef4444",
+              color: "white",
+              border: "none",
+              padding: "12px 20px",
+              borderRadius: "10px",
+              cursor: "pointer",
+            }}
+          >
+
+            <FaSignOutAlt />
+
+            {" "}Clock Out
 
           </button>
 
         </div>
-      )}
 
-      {/* ACTIVE RECORD */}
-      {activeRecord && (
-
-        <div
-          style={{
-            background: "#1e293b",
-            marginTop: "40px",
-            padding: "35px",
-            borderRadius: "20px"
-          }}
-        >
-
-          <h2
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px"
-            }}
-          >
-
-            {
-              activeRecord.status === "Working"
-
-                ? (
-                  <>
-                    <FaCheckCircle color="#22c55e" />
-                    Working
-                  </>
-                )
-
-                : activeRecord.status === "Break"
-
-                ? (
-                  <>
-                    <FaCoffee color="#f59e0b" />
-                    Break
-                  </>
-                )
-
-                : (
-                  <>
-                    <FaPowerOff color="#ef4444" />
-                    Completed
-                  </>
-                )
-            }
-
-          </h2>
-
-          {/* TEXTAREAS */}
-          <div
-            style={{
-              marginTop: "25px",
-              display: "grid",
-              gridTemplateColumns:
-                "repeat(auto-fit,minmax(250px,1fr))",
-              gap: "20px"
-            }}
-          >
-
-            <textarea
-              placeholder="Today's Progress"
-              value={progress}
-              onChange={(e) =>
-                setProgress(e.target.value)
-              }
-              style={textareaStyle}
-            />
-
-            <textarea
-              placeholder="Tasks Completed"
-              value={tasks}
-              onChange={(e) =>
-                setTasks(e.target.value)
-              }
-              style={textareaStyle}
-            />
-
-            <textarea
-              placeholder="Issues Faced"
-              value={issues}
-              onChange={(e) =>
-                setIssues(e.target.value)
-              }
-              style={textareaStyle}
-            />
-
-            <textarea
-              placeholder="Tomorrow Plan"
-              value={tomorrowPlan}
-              onChange={(e) =>
-                setTomorrowPlan(e.target.value)
-              }
-              style={textareaStyle}
-            />
-
-          </div>
-
-          {/* BUTTONS */}
-          <div
-            style={{
-              marginTop: "30px",
-              display: "flex",
-              gap: "20px",
-              flexWrap: "wrap"
-            }}
-          >
-
-            {
-              activeRecord.status === "Working" && (
-
-                <button
-                  onClick={() =>
-                    takeBreak(activeRecord._id)
-                  }
-                  style={breakBtn}
-                >
-
-                  <FaCoffee />
-
-                  Take Break
-
-                </button>
-              )
-            }
-
-            {
-              activeRecord.status === "Break" && (
-
-                <button
-                  onClick={() =>
-                    resumeWork(activeRecord._id)
-                  }
-                  style={resumeBtn}
-                >
-
-                  <FaPlayCircle />
-
-                  Resume Work
-
-                </button>
-              )
-            }
-
-            <button
-              onClick={() =>
-                clockOut(activeRecord._id)
-              }
-              style={clockoutBtn}
-            >
-
-              <FaPowerOff />
-
-              Clock Out
-
-            </button>
-
-          </div>
-
-        </div>
-      )}
+      </div>
 
     </div>
   );
 }
-
-const selectStyle = {
-
-  padding: "14px",
-
-  width: "260px",
-
-  borderRadius: "10px",
-
-  border: "none",
-
-  outline: "none"
-};
-
-const textareaStyle = {
-
-  width: "100%",
-
-  padding: "15px",
-
-  borderRadius: "10px",
-
-  border: "none",
-
-  outline: "none",
-
-  minHeight: "120px",
-
-  resize: "none"
-};
-
-const breakBtn = {
-
-  background: "#f59e0b",
-
-  border: "none",
-
-  padding: "14px 25px",
-
-  borderRadius: "10px",
-
-  color: "white",
-
-  cursor: "pointer",
-
-  display: "flex",
-
-  alignItems: "center",
-
-  gap: "10px",
-
-  fontWeight: "bold"
-};
-
-const resumeBtn = {
-
-  background: "#22c55e",
-
-  border: "none",
-
-  padding: "14px 25px",
-
-  borderRadius: "10px",
-
-  color: "white",
-
-  cursor: "pointer",
-
-  display: "flex",
-
-  alignItems: "center",
-
-  gap: "10px",
-
-  fontWeight: "bold"
-};
-
-const clockoutBtn = {
-
-  background: "#ef4444",
-
-  border: "none",
-
-  padding: "14px 25px",
-
-  borderRadius: "10px",
-
-  color: "white",
-
-  cursor: "pointer",
-
-  display: "flex",
-
-  alignItems: "center",
-
-  gap: "10px",
-
-  fontWeight: "bold"
-};
