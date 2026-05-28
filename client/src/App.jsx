@@ -43,8 +43,13 @@ export default function App() {
           element={
             admin
               ? <AdminDashboard />
-              : <Navigate to="/admin-login" />
+              : <Navigate to="/admin-login" replace />
           }
+        />
+
+        <Route
+          path="*"
+          element={<Navigate to="/" replace />}
         />
 
       </Routes>

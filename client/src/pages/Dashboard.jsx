@@ -21,6 +21,12 @@ export default function Dashboard() {
   const [records, setRecords] =
     useState([]);
 
+  useEffect(() => {
+    if (!user) {
+      navigate("/");
+    }
+  }, [navigate, user]);
+
   const [todayStatus, setTodayStatus] =
     useState("");
 
@@ -46,6 +52,7 @@ export default function Dashboard() {
   }, []);
 
   const fetchAttendance = async () => {
+    if (!user) return;
 
     const res = await axios.get(
 
