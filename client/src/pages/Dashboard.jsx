@@ -1,155 +1,211 @@
 import { useEffect, useState } from "react";
+
 import axios from "axios";
+
+import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
 
-  const [attendance, setAttendance] = useState([]);
+  const navigate = useNavigate();
 
   const user = JSON.parse(
     localStorage.getItem("user")
   );
 
-  const BACKEND_URL =
-    "https://attendance-backend-32mo.onrender.com";
+  const [records, setRecords] =
+    useState([]);
 
+  const [todayStatus, setTodayStatus] =
+    useState("");
 
+  const [feeling, setFeeling] =
+    useState("");
 
-  // FETCH ATTENDANCE
-  const fetchAttendance = async () => {
+  const [progress, setProgress] =
+    useState("");
 
-    const res = await axios.get(
-      `${BACKEND_URL}/api/attendance/all`
-    );
+  const [tasks, setTasks] =
+    useState("");
 
-    const userAttendance =
-      res.data.filter(
-        item => item.userId === user.id
-      );
+  const [issues, setIssues] =
+    useState("");
 
-    setAttendance(userAttendance.reverse());
-  };
-
-
+  const [tomorrowPlan, setTomorrowPlan] =
+    useState("");
 
   useEffect(() => {
 
     fetchAttendance();
 
-    const interval = setInterval(() => {
-      fetchAttendance();
-    }, 3000);
-
-    return () => clearInterval(interval);
-
   }, []);
 
+  const fetchAttendance = async () => {
 
+    const res = await axios.get(
 
+      "https://attendance-backend-32mo.onrender.com/api/attendance/all"
+
+    );
+
+    const filtered = res.data.filter(
+
+      item => item.userId === user.id
+
+    );
+
+    setRecords(filtered.reverse());
+  };
 
   // CLOCK IN
-  const handleClockIn = async () => {
+
+  const clockIn = async () => {
 
     await axios.post(
-      `${BACKEND_URL}/api/attendance/clock-in`,
+
+      "https://attendance-backend-32mo.onrender.com/api/attendance/clock-in",
+
       {
+
         userId: user.id,
-        userName: user.name
+
+        userName: user.name,
+
+        todayStatus,
+
+        feeling
       }
     );
 
     fetchAttendance();
   };
-
-
 
   // CLOCK OUT
-  const handleClockOut = async (attendanceId) => {
+
+  const clockOut = async (id) => {
 
     await axios.post(
-      `${BACKEND_URL}/api/attendance/clock-out`,
+
+      "https://attendance-backend-32mo.onrender.com/api/attendance/clock-out",
+
       {
-        attendanceId
+
+        attendanceId: id,
+
+        progress,
+
+        tasks,
+
+        issues,
+
+        tomorrowPlan
       }
     );
 
     fetchAttendance();
   };
 
+  // BREAK
 
+  const takeBreak = async (id) => {
 
+    await axios.post(
+
+      "https://attendance-backend-32mo.onrender.com/api/attendance/update-status",
+
+      {
+
+        attendanceId: id,
+
+        status: "Break"
+      }
+    );
+
+    fetchAttendance();
+  };
+
+  // RESUME
+
+  const resumeWork = async (id) => {
+
+    await axios.post(
+
+      "https://attendance-backend-32mo.onrender.com/api/attendance/update-status",
+
+      {
+
+        attendanceId: id,
+
+        status: "Working"
+      }
+    );
+
+    fetchAttendance();
+  };
 
   // LOGOUT
-  const handleLogout = () => {
+
+  const logout = () => {
 
     localStorage.removeItem("user");
 
-    window.location.href = "/";
+    navigate("/");
   };
 
+  // TODAY RECORD
 
+  const activeRecord = records.find(
 
+    item =>
 
-  const currentWorking =
-    attendance.find(
-      item => item.status === "Working"
-    );
+      item.status === "Working"
 
+      ||
 
+      item.status === "Break"
+  );
 
   return (
 
     <div
       style={{
-        padding: "30px",
-        background: "#0f172a",
+        background: "#020617",
         minHeight: "100vh",
+        padding: "40px",
         color: "white"
       }}
     >
 
-
       {/* HEADER */}
+
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "30px"
+          alignItems: "center"
         }}
       >
 
         <div>
 
-          <h1
-            style={{
-              fontSize: "45px",
-              marginBottom: "10px"
-            }}
-          >
-            Welcome {user?.name}
+          <h1>
+            Welcome {user.name}
           </h1>
 
-          <p
-            style={{
-              color: "#cbd5e1"
-            }}
-          >
+          <p>
             Employee Attendance Dashboard
           </p>
 
         </div>
 
-
         <button
-          onClick={handleLogout}
+          onClick={logout}
           style={{
-            padding: "12px 20px",
+            padding: "10px 20px",
             background: "#ef4444",
-            border: "none",
             color: "white",
+            border: "none",
             borderRadius: "10px",
-            cursor: "pointer",
-            fontWeight: "bold"
+            cursor: "pointer"
           }}
         >
           Logout
@@ -157,216 +213,459 @@ export default function Dashboard() {
 
       </div>
 
+      {/* START DAY */}
 
+      {
 
+        !activeRecord && (
 
-      {/* STATUS CARD */}
-      <div
-        style={{
-          background: "#1e293b",
-          padding: "25px",
-          borderRadius: "15px",
-          marginBottom: "25px",
-          textAlign: "center"
-        }}
-      >
+          <div
+            style={{
+              background: "#1e293b",
+              padding: "30px",
+              borderRadius: "15px",
+              marginTop: "30px",
+              textAlign: "center"
+            }}
+          >
 
-        <h2>
+            <h2>
 
-          Current Status:
+              Yesterday Working Hours:
 
-          {
+              {
 
-            currentWorking
-            ? " 🟡 Working"
+                records[1]?.workingHours || "0 hrs"
+              }
 
-            : attendance[0]?.status === "Completed"
-            ? " 🟢 Completed"
+            </h2>
 
-            : attendance[0]?.status === "Half Day"
-            ? " 🔵 Half Day"
+            <div
+              style={{
+                marginTop: "20px"
+              }}
+            >
 
-            : " 🔴 Not Working"
+              <select
+                value={todayStatus}
+                onChange={(e) =>
+                  setTodayStatus(
+                    e.target.value
+                  )
+                }
+                style={{
+                  padding: "12px",
+                  width: "250px",
+                  marginRight: "20px"
+                }}
+              >
 
-          }
+                <option value="">
+                  Select Today Status
+                </option>
 
-        </h2>
+                <option>
+                  Office Work
+                </option>
 
-      </div>
+                <option>
+                  Work From Home
+                </option>
 
+                <option>
+                  Half Day
+                </option>
 
+              </select>
 
+              <select
+                value={feeling}
+                onChange={(e) =>
+                  setFeeling(
+                    e.target.value
+                  )
+                }
+                style={{
+                  padding: "12px",
+                  width: "250px"
+                }}
+              >
 
-      {/* BUTTONS */}
-      <div
-        style={{
-          marginBottom: "25px"
-        }}
-      >
+                <option value="">
+                  Today Feeling
+                </option>
 
-        {
+                <option>
+                  Happy 😊
+                </option>
 
-          !currentWorking && (
+                <option>
+                  Normal 🙂
+                </option>
+
+                <option>
+                  Sad 😔
+                </option>
+
+              </select>
+
+            </div>
 
             <button
-              onClick={handleClockIn}
+              onClick={clockIn}
               style={{
-                padding: "12px 22px",
-                marginRight: "10px",
+                marginTop: "25px",
+                padding: "12px 30px",
                 background: "#10b981",
                 border: "none",
-                color: "white",
                 borderRadius: "10px",
-                cursor: "pointer",
-                fontWeight: "bold"
+                color: "white",
+                cursor: "pointer"
               }}
             >
-              Clock In
+
+              Start Day
+
             </button>
 
-          )
+          </div>
 
-        }
+        )
+      }
 
+      {/* ACTIVE STATUS */}
 
-        {
+      {
 
-          currentWorking && (
+        activeRecord && (
 
-            <button
-              onClick={() =>
-                handleClockOut(currentWorking.id)
+          <div
+            style={{
+              background: "#1e293b",
+              padding: "25px",
+              borderRadius: "15px",
+              marginTop: "30px"
+            }}
+          >
+
+            <h2>
+
+              Current Status:
+
+              {
+
+                activeRecord.status ===
+                "Working"
+
+                ? " 🟢 Working"
+
+                : " ☕ Break"
               }
+
+            </h2>
+
+            {/* PROGRESS */}
+
+            <div
               style={{
-                padding: "12px 22px",
-                background: "#3b82f6",
-                border: "none",
-                color: "white",
-                borderRadius: "10px",
-                cursor: "pointer",
-                fontWeight: "bold"
+                marginTop: "25px"
               }}
             >
-              Clock Out
-            </button>
 
-          )
+              <textarea
+                placeholder="Today's Progress"
+                value={progress}
+                onChange={(e) =>
+                  setProgress(
+                    e.target.value
+                  )
+                }
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  marginBottom: "15px"
+                }}
+              />
 
-        }
+              <textarea
+                placeholder="Tasks Completed"
+                value={tasks}
+                onChange={(e) =>
+                  setTasks(
+                    e.target.value
+                  )
+                }
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  marginBottom: "15px"
+                }}
+              />
 
-      </div>
+              <textarea
+                placeholder="Issues Faced"
+                value={issues}
+                onChange={(e) =>
+                  setIssues(
+                    e.target.value
+                  )
+                }
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  marginBottom: "15px"
+                }}
+              />
 
+              <textarea
+                placeholder="Tomorrow Plan"
+                value={tomorrowPlan}
+                onChange={(e) =>
+                  setTomorrowPlan(
+                    e.target.value
+                  )
+                }
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  marginBottom: "15px"
+                }}
+              />
 
+            </div>
 
+            {/* BUTTONS */}
 
+            <div
+              style={{
+                marginTop: "20px"
+              }}
+            >
+
+              {
+
+                activeRecord.status ===
+                "Working"
+
+                ? (
+
+                  <button
+                    onClick={() =>
+                      takeBreak(
+                        activeRecord.id
+                      )
+                    }
+                    style={{
+                      padding: "12px 25px",
+                      background: "#f59e0b",
+                      border: "none",
+                      borderRadius: "10px",
+                      color: "white",
+                      marginRight: "15px"
+                    }}
+                  >
+                    Take Break
+                  </button>
+
+                )
+
+                : (
+
+                  <button
+                    onClick={() =>
+                      resumeWork(
+                        activeRecord.id
+                      )
+                    }
+                    style={{
+                      padding: "12px 25px",
+                      background: "#3b82f6",
+                      border: "none",
+                      borderRadius: "10px",
+                      color: "white",
+                      marginRight: "15px"
+                    }}
+                  >
+                    Resume Work
+                  </button>
+
+                )
+              }
+
+              <button
+                onClick={() =>
+                  clockOut(
+                    activeRecord.id
+                  )
+                }
+                style={{
+                  padding: "12px 25px",
+                  background: "#ef4444",
+                  border: "none",
+                  borderRadius: "10px",
+                  color: "white"
+                }}
+              >
+                Clock Out
+              </button>
+
+            </div>
+
+          </div>
+
+        )
+      }
 
       {/* TABLE */}
-      <table
-        border="1"
-        cellPadding="12"
-        width="100%"
+
+      <div
         style={{
-          background: "white",
-          color: "black",
-          borderCollapse: "collapse",
-          borderRadius: "10px",
-          overflow: "hidden"
+          marginTop: "40px"
         }}
       >
 
-        <thead
+        <table
+          width="100%"
+          cellPadding="15"
           style={{
-            background: "#e2e8f0"
+            background: "white",
+            color: "black",
+            borderCollapse: "collapse",
+            borderRadius: "15px",
+            overflow: "hidden"
           }}
         >
 
-          <tr>
+          <thead
+            style={{
+              background: "#1e293b",
+              color: "white"
+            }}
+          >
 
-            <th>Date</th>
+            <tr>
 
-            <th>Clock In</th>
+              <th>Date</th>
 
-            <th>Clock Out</th>
+              <th>Today Status</th>
 
-            <th>Status</th>
+              <th>Feeling</th>
 
-            <th>Working Hours</th>
+              <th>Clock In</th>
 
-          </tr>
+              <th>Clock Out</th>
 
-        </thead>
+              <th>Status</th>
 
+              <th>Working Hours</th>
 
+            </tr>
 
-        <tbody>
+          </thead>
 
-          {
+          <tbody>
 
-            attendance.map((item) => (
+            {
 
-              <tr key={item.id}>
+              records.map((item) => (
 
+                <tr
+                  key={item.id}
+                >
 
-                <td>{item.date}</td>
+                  <td>
+                    {item.date}
+                  </td>
 
+                  <td>
+                    {item.todayStatus}
+                  </td>
 
-                <td>{item.clockIn}</td>
+                  <td>
+                    {item.feeling}
+                  </td>
 
+                  <td>
+                    {item.clockIn}
+                  </td>
 
-                <td>
-                  {item.clockOut || "-"}
-                </td>
+                  <td>
+                    {
 
+                      item.clockOut || "-"
+                    }
 
+                  </td>
 
-                <td>
+                  <td>
 
-                  <span
-                    style={{
-                      padding: "6px 12px",
-                      borderRadius: "20px",
-                      color: "white",
-                      fontWeight: "bold",
+                    <span
+                      style={{
 
-                      background:
+                        padding:
+                          "6px 14px",
 
-                        item.status === "Working"
-                        ? "#f59e0b"
+                        borderRadius:
+                          "30px",
 
-                        : item.status === "Completed"
-                        ? "#10b981"
+                        color:
+                          "white",
 
-                        : item.status === "Half Day"
-                        ? "#3b82f6"
+                        background:
 
-                        : "#ef4444"
-                    }}
-                  >
+                          item.status ===
+                          "Working"
 
-                    {item.status}
+                          ? "#22c55e"
 
-                  </span>
+                          : item.status ===
+                            "Break"
 
-                </td>
+                          ? "#f59e0b"
 
+                          : "#ef4444"
+                      }}
+                    >
 
+                      {
 
-                <td>
+                        item.status ===
+                        "Working"
 
-                  {item.workingHours || "-"}
+                        ? "🟢 Working"
 
-                </td>
+                        : item.status ===
+                          "Break"
 
+                        ? "☕ Break"
 
-              </tr>
+                        : "🔴 Not Working"
+                      }
 
-            ))
+                    </span>
 
-          }
+                  </td>
 
-        </tbody>
+                  <td>
 
-      </table>
+                    {
+
+                      item.workingHours ||
+                      "0 hrs"
+                    }
+
+                  </td>
+
+                </tr>
+
+              ))
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
 
     </div>
   );

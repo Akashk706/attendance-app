@@ -12,9 +12,6 @@ import AdminLogin from "./pages/AdminLogin";
 
 export default function App() {
 
-  const user =
-    localStorage.getItem("user");
-
   const admin =
     localStorage.getItem("admin");
 
@@ -24,35 +21,27 @@ export default function App() {
 
       <Routes>
 
-        {/* USER LOGIN */}
         <Route
           path="/"
           element={<Login />}
         />
 
-        {/* USER DASHBOARD */}
         <Route
           path="/dashboard"
-          element={
-            user
-            ? <Dashboard />
-            : <Navigate to="/" />
-          }
+          element={<Dashboard />}
         />
 
-        {/* ADMIN LOGIN */}
         <Route
           path="/admin-login"
           element={<AdminLogin />}
         />
 
-        {/* ADMIN DASHBOARD */}
         <Route
           path="/admin"
           element={
             admin
-            ? <AdminDashboard />
-            : <Navigate to="/admin-login" />
+              ? <AdminDashboard />
+              : <Navigate to="/admin-login" />
           }
         />
 
