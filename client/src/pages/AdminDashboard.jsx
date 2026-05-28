@@ -18,6 +18,12 @@ import {
 
 export default function AdminDashboard() {
 
+  const baseURL =
+    import.meta.env.VITE_API_BASE_URL ||
+    (import.meta.env.MODE === "development"
+      ? "http://localhost:5000"
+      : "");
+
   const [records, setRecords] =
     useState([]);
 
@@ -32,7 +38,7 @@ export default function AdminDashboard() {
     try {
 
       const res = await axios.get(
-        "http://localhost:5000/api/attendance/all"
+        `${baseURL}/api/attendance/all`
       );
 
       setRecords(res.data);

@@ -8,6 +8,12 @@ export default function Login() {
 
   const navigate = useNavigate();
 
+  const baseURL =
+    import.meta.env.VITE_API_BASE_URL ||
+    (import.meta.env.MODE === "development"
+      ? "http://localhost:5000"
+      : "");
+
   const [isRegister, setIsRegister] =
     useState(false);
 
@@ -31,7 +37,7 @@ export default function Login() {
 
         await axios.post(
 
-          "http://localhost:5000/api/auth/register",
+          `${baseURL}/api/auth/register`,
 
           {
             name,
@@ -50,7 +56,7 @@ export default function Login() {
 
         const res = await axios.post(
 
-          "http://localhost:5000/api/auth/login",
+          `${baseURL}/api/auth/login`,
 
           {
             email,

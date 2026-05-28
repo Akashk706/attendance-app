@@ -12,6 +12,12 @@ export default function Dashboard() {
     localStorage.getItem("user")
   );
 
+  const baseURL =
+    import.meta.env.VITE_API_BASE_URL ||
+    (import.meta.env.MODE === "development"
+      ? "http://localhost:5000"
+      : "");
+
   const [records, setRecords] =
     useState([]);
 
@@ -43,7 +49,7 @@ export default function Dashboard() {
 
     const res = await axios.get(
 
-      "http://localhost:5000/api/attendance/all"
+      `${baseURL}/api/attendance/all`
 
     );
 
@@ -62,7 +68,7 @@ export default function Dashboard() {
 
     await axios.post(
 
-      "http://localhost:5000/api/attendance/clock-in",
+      `${baseURL}/api/attendance/clock-in`,
 
       {
 
@@ -85,7 +91,7 @@ export default function Dashboard() {
 
     await axios.post(
 
-      "http://localhost:5000/api/attendance/clock-out",
+      `${baseURL}/api/attendance/clock-out`,
 
       {
 
@@ -110,7 +116,7 @@ export default function Dashboard() {
 
     await axios.post(
 
-      "http://localhost:5000/api/attendance/update-status",
+      `${baseURL}/api/attendance/update-status`,
 
       {
 
@@ -129,7 +135,7 @@ export default function Dashboard() {
 
     await axios.post(
 
-      "http://localhost:5000/api/attendance/update-status",
+      `${baseURL}/api/attendance/update-status`,
 
       {
 
