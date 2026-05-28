@@ -116,6 +116,26 @@ export default function AdminDashboard() {
     "#ef4444"
   ];
 
+  // Calculate hours from clock times
+  const calculateHours = (clockIn, clockOut) => {
+    if (!clockOut) return "-";
+    
+    try {
+      const inTime = new Date(`1970/01/01 ${clockIn}`);
+      const outTime = new Date(`1970/01/01 ${clockOut}`);
+      
+      if (outTime < inTime) {
+        outTime.setDate(outTime.getDate() + 1);
+      }
+      
+      const diffMs = outTime - inTime;
+      const hours = (diffMs / (1000 * 60 * 60)).toFixed(2);
+      return `${hours} hrs`;
+    } catch {
+      return "-";
+    }
+  };
+
   return (
 
     <div
@@ -486,7 +506,7 @@ export default function AdminDashboard() {
                     </td>
 
                     <td>
-                      {item.workingHours || "-"}
+                      {item.workingHours || calculateHours(item.clockIn, item.clockOut)}
                     </td>
 
                   </tr>
