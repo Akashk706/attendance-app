@@ -6,27 +6,27 @@ import React, {
 import axios from "axios";
 
 import {
-
   PieChart,
   Pie,
   Cell,
   Tooltip,
   ResponsiveContainer,
   Legend
-
 } from "recharts";
 
 export default function AdminDashboard() {
 
+  // BACKEND URL
   const baseURL =
     import.meta.env.VITE_API_BASE_URL ||
     (import.meta.env.MODE === "development"
       ? "http://localhost:5000"
-      : "");
+      : "https://attendance-backend-32mo.onrender.com");
 
   const [records, setRecords] =
     useState([]);
 
+  // FETCH DATA
   useEffect(() => {
 
     fetchAttendance();
@@ -49,6 +49,7 @@ export default function AdminDashboard() {
     }
   };
 
+  // LOGOUT
   const logoutAdmin = () => {
 
     localStorage.removeItem("admin");
@@ -57,6 +58,7 @@ export default function AdminDashboard() {
       "/admin-login";
   };
 
+  // COUNTS
   const workingCount =
     records.filter(
       item =>
@@ -81,6 +83,7 @@ export default function AdminDashboard() {
         item.status === "Not Working"
     ).length;
 
+  // PIE CHART DATA
   const pieData = [
 
     {
@@ -104,14 +107,12 @@ export default function AdminDashboard() {
     }
   ];
 
+  // COLORS
   const COLORS = [
 
     "#22c55e",
-
     "#f59e0b",
-
     "#3b82f6",
-
     "#ef4444"
   ];
 
@@ -125,6 +126,7 @@ export default function AdminDashboard() {
       }}
     >
 
+      {/* HEADER */}
       <div
         style={{
           display: "flex",
@@ -140,9 +142,7 @@ export default function AdminDashboard() {
             fontSize: "45px"
           }}
         >
-
           Admin Dashboard
-
         </h1>
 
         <button
@@ -158,13 +158,12 @@ export default function AdminDashboard() {
             fontWeight: "bold"
           }}
         >
-
           Logout
-
         </button>
 
       </div>
 
+      {/* STATS */}
       <div
         style={{
           display: "grid",
@@ -175,6 +174,7 @@ export default function AdminDashboard() {
         }}
       >
 
+        {/* TOTAL */}
         <div
           style={{
             background: "#1e293b",
@@ -189,9 +189,7 @@ export default function AdminDashboard() {
               color: "white"
             }}
           >
-
             {records.length}
-
           </h2>
 
           <p
@@ -199,13 +197,12 @@ export default function AdminDashboard() {
               color: "white"
             }}
           >
-
             Total Records
-
           </p>
 
         </div>
 
+        {/* WORKING */}
         <div
           style={{
             background: "#1e293b",
@@ -220,9 +217,7 @@ export default function AdminDashboard() {
               color: "#22c55e"
             }}
           >
-
             {workingCount}
-
           </h2>
 
           <p
@@ -230,13 +225,12 @@ export default function AdminDashboard() {
               color: "white"
             }}
           >
-
             Working
-
           </p>
 
         </div>
 
+        {/* BREAK */}
         <div
           style={{
             background: "#1e293b",
@@ -251,9 +245,7 @@ export default function AdminDashboard() {
               color: "#f59e0b"
             }}
           >
-
             {breakCount}
-
           </h2>
 
           <p
@@ -261,13 +253,12 @@ export default function AdminDashboard() {
               color: "white"
             }}
           >
-
             On Break
-
           </p>
 
         </div>
 
+        {/* NOT WORKING */}
         <div
           style={{
             background: "#1e293b",
@@ -282,9 +273,7 @@ export default function AdminDashboard() {
               color: "#ef4444"
             }}
           >
-
             {notWorkingCount}
-
           </h2>
 
           <p
@@ -292,15 +281,14 @@ export default function AdminDashboard() {
               color: "white"
             }}
           >
-
             Not Working
-
           </p>
 
         </div>
 
       </div>
 
+      {/* PIE CHART */}
       <div
         style={{
           background: "#1e293b",
@@ -316,9 +304,7 @@ export default function AdminDashboard() {
             textAlign: "center"
           }}
         >
-
           Attendance Analytics
-
         </h2>
 
         <div
@@ -333,27 +319,17 @@ export default function AdminDashboard() {
             <PieChart>
 
               <Pie
-
                 data={pieData}
-
                 dataKey="value"
-
                 cx="50%"
-
                 cy="50%"
-
                 outerRadius={140}
-
                 label
               >
 
                 {
-
                   pieData.map(
-                    (
-                      entry,
-                      index
-                    ) => (
+                    (entry, index) => (
 
                       <Cell
                         key={index}
@@ -380,6 +356,7 @@ export default function AdminDashboard() {
 
       </div>
 
+      {/* TABLE */}
       <div
         style={{
           marginTop: "40px",
@@ -432,12 +409,8 @@ export default function AdminDashboard() {
           <tbody>
 
             {
-
               records.map(
-                (
-                  item,
-                  index
-                ) => (
+                (item, index) => (
 
                   <tr
                     key={index}
@@ -453,11 +426,7 @@ export default function AdminDashboard() {
                           "15px"
                       }}
                     >
-
-                      {
-                        item.userName
-                      }
-
+                      {item.userName}
                     </td>
 
                     <td>
@@ -465,22 +434,18 @@ export default function AdminDashboard() {
                     </td>
 
                     <td>
-                      {
-                        item.clockIn
-                      }
+                      {item.clockIn}
                     </td>
 
                     <td>
-                      {
-                        item.clockOut ||
-                        "-"
-                      }
+                      {item.clockOut || "-"}
                     </td>
 
                     <td>
 
                       <span
                         style={{
+
                           background:
 
                             item.status ===
@@ -514,21 +479,14 @@ export default function AdminDashboard() {
                         }}
                       >
 
-                        {
-                          item.status
-                        }
+                        {item.status}
 
                       </span>
 
                     </td>
 
                     <td>
-
-                      {
-                        item.totalHours ||
-                        "-"
-                      }
-
+                      {item.totalHours || "-"}
                     </td>
 
                   </tr>

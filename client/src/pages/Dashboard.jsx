@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-
 import axios from "axios";
-
 import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
@@ -12,20 +10,14 @@ export default function Dashboard() {
     localStorage.getItem("user")
   );
 
+  // BACKEND URL
   const baseURL =
     import.meta.env.VITE_API_BASE_URL ||
     (import.meta.env.MODE === "development"
       ? "http://localhost:5000"
-      : "");
+      : "https://attendance-backend-32mo.onrender.com");
 
-  const [records, setRecords] =
-    useState([]);
-
-  useEffect(() => {
-    if (!user) {
-      navigate("/");
-    }
-  }, [navigate, user]);
+  const [records, setRecords] = useState([]);
 
   const [todayStatus, setTodayStatus] =
     useState("");
@@ -45,6 +37,17 @@ export default function Dashboard() {
   const [tomorrowPlan, setTomorrowPlan] =
     useState("");
 
+  // CHECK LOGIN
+  useEffect(() => {
+
+    if (!user) {
+
+      navigate("/");
+    }
+
+  }, [navigate, user]);
+
+  // FETCH ATTENDANCE
   useEffect(() => {
 
     fetchAttendance();
@@ -52,111 +55,117 @@ export default function Dashboard() {
   }, []);
 
   const fetchAttendance = async () => {
+
     if (!user) return;
 
-    const res = await axios.get(
+    try {
 
-      `${baseURL}/api/attendance/all`
+      const res = await axios.get(
+        `${baseURL}/api/attendance/all`
+      );
 
-    );
+      const filtered = res.data.filter(
+        item => item.userId === user.id
+      );
 
-    const filtered = res.data.filter(
+      setRecords(filtered.reverse());
 
-      item => item.userId === user.id
+    } catch (error) {
 
-    );
-
-    setRecords(filtered.reverse());
+      console.error(error);
+    }
   };
 
   // CLOCK IN
-
   const clockIn = async () => {
 
-    await axios.post(
+    try {
 
-      `${baseURL}/api/attendance/clock-in`,
+      await axios.post(
+        `${baseURL}/api/attendance/clock-in`,
+        {
+          userId: user.id,
+          userName: user.name,
+          todayStatus,
+          feeling
+        }
+      );
 
-      {
+      fetchAttendance();
 
-        userId: user.id,
+    } catch (error) {
 
-        userName: user.name,
-
-        todayStatus,
-
-        feeling
-      }
-    );
-
-    fetchAttendance();
+      console.error(error);
+    }
   };
 
   // CLOCK OUT
-
   const clockOut = async (id) => {
 
-    await axios.post(
+    try {
 
-      `${baseURL}/api/attendance/clock-out`,
+      await axios.post(
+        `${baseURL}/api/attendance/clock-out`,
+        {
+          attendanceId: id,
+          progress,
+          tasks,
+          issues,
+          tomorrowPlan
+        }
+      );
 
-      {
+      fetchAttendance();
 
-        attendanceId: id,
+    } catch (error) {
 
-        progress,
-
-        tasks,
-
-        issues,
-
-        tomorrowPlan
-      }
-    );
-
-    fetchAttendance();
+      console.error(error);
+    }
   };
 
   // BREAK
-
   const takeBreak = async (id) => {
 
-    await axios.post(
+    try {
 
-      `${baseURL}/api/attendance/update-status`,
+      await axios.post(
+        `${baseURL}/api/attendance/update-status`,
+        {
+          attendanceId: id,
+          status: "Break"
+        }
+      );
 
-      {
+      fetchAttendance();
 
-        attendanceId: id,
+    } catch (error) {
 
-        status: "Break"
-      }
-    );
-
-    fetchAttendance();
+      console.error(error);
+    }
   };
 
-  // RESUME
-
+  // RESUME WORK
   const resumeWork = async (id) => {
 
-    await axios.post(
+    try {
 
-      `${baseURL}/api/attendance/update-status`,
+      await axios.post(
+        `${baseURL}/api/attendance/update-status`,
+        {
+          attendanceId: id,
+          status: "Working"
+        }
+      );
 
-      {
+      fetchAttendance();
 
-        attendanceId: id,
+    } catch (error) {
 
-        status: "Working"
-      }
-    );
-
-    fetchAttendance();
+      console.error(error);
+    }
   };
 
   // LOGOUT
-
   const logout = () => {
 
     localStorage.removeItem("user");
@@ -164,90 +173,80 @@ export default function Dashboard() {
     navigate("/");
   };
 
-  // TODAY RECORD
-
+  // ACTIVE RECORD
   const activeRecord = records.find(
-
     item =>
-
-      item.status === "Working"
-
-      ||
-
+      item.status === "Working" ||
       item.status === "Break"
   );
 
   return (
+
     <div className="dashboard-shell">
+
       <div className="dashboard-container">
+
         {/* HEADER */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center"
+          }}
+        >
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center"
-        }}
-      >
+          <div>
 
-        <div>
+            <h1>
+              Welcome {user?.name}
+            </h1>
 
-          <h1>
-            Welcome {user.name}
-          </h1>
+            <p>
+              Employee Attendance Dashboard
+            </p>
 
-          <p>
-            Employee Attendance Dashboard
-          </p>
+          </div>
+
+          <button
+            onClick={logout}
+            style={{
+              padding: "10px 20px",
+              background: "#ef4444",
+              color: "white",
+              border: "none",
+              borderRadius: "10px",
+              cursor: "pointer"
+            }}
+          >
+            Logout
+          </button>
 
         </div>
 
-        <button
-          onClick={logout}
-          style={{
-            padding: "10px 20px",
-            background: "#ef4444",
-            color: "white",
-            border: "none",
-            borderRadius: "10px",
-            cursor: "pointer"
-          }}
-        >
-          Logout
-        </button>
+        {/* START DAY */}
+        {!activeRecord && (
 
-      </div>
-
-      {/* START DAY */}
-      {!activeRecord && (
-        <div
-          className="card"
-          style={{ marginTop: "30px", textAlign: "center" }}
-        >
+          <div
+            className="card"
+            style={{
+              marginTop: "30px",
+              textAlign: "center"
+            }}
+          >
 
             <h2>
-
               Yesterday Working Hours:
-
               {
-
                 records[1]?.workingHours || "0 hrs"
               }
-
             </h2>
 
-            <div
-              style={{
-                marginTop: "20px"
-              }}
-            >
+            <div style={{ marginTop: "20px" }}>
 
               <select
                 value={todayStatus}
                 onChange={(e) =>
-                  setTodayStatus(
-                    e.target.value
-                  )
+                  setTodayStatus(e.target.value)
                 }
                 style={{
                   padding: "12px",
@@ -277,9 +276,7 @@ export default function Dashboard() {
               <select
                 value={feeling}
                 onChange={(e) =>
-                  setFeeling(
-                    e.target.value
-                  )
+                  setFeeling(e.target.value)
                 }
                 style={{
                   padding: "12px",
@@ -319,326 +316,73 @@ export default function Dashboard() {
                 cursor: "pointer"
               }}
             >
-
               Start Day
-
             </button>
 
           </div>
+        )}
 
-        )
-      }
+        {/* ACTIVE STATUS */}
+        {activeRecord && (
 
-      {/* ACTIVE STATUS */}
-
-      {activeRecord && (
-        <div className="card" style={{ marginTop: "30px" }}>
+          <div
+            className="card"
+            style={{ marginTop: "30px" }}
+          >
 
             <h2>
 
               Current Status:
 
               {
-
-                activeRecord.status ===
-                "Working"
-
-                ? " 🟢 Working"
-
-                : " ☕ Break"
+                activeRecord.status === "Working"
+                  ? " 🟢 Working"
+                  : " ☕ Break"
               }
 
             </h2>
 
-            {/* PROGRESS */}
-
-            <div
-              style={{
-                marginTop: "25px"
-              }}
-            >
+            <div style={{ marginTop: "25px" }}>
 
               <textarea
                 placeholder="Today's Progress"
                 value={progress}
                 onChange={(e) =>
-                  setProgress(
-                    e.target.value
-                  )
+                  setProgress(e.target.value)
                 }
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  marginBottom: "15px"
-                }}
               />
 
               <textarea
                 placeholder="Tasks Completed"
                 value={tasks}
                 onChange={(e) =>
-                  setTasks(
-                    e.target.value
-                  )
+                  setTasks(e.target.value)
                 }
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  marginBottom: "15px"
-                }}
               />
 
               <textarea
                 placeholder="Issues Faced"
                 value={issues}
                 onChange={(e) =>
-                  setIssues(
-                    e.target.value
-                  )
+                  setIssues(e.target.value)
                 }
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  marginBottom: "15px"
-                }}
               />
 
               <textarea
                 placeholder="Tomorrow Plan"
                 value={tomorrowPlan}
                 onChange={(e) =>
-                  setTomorrowPlan(
-                    e.target.value
-                  )
+                  setTomorrowPlan(e.target.value)
                 }
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  marginBottom: "15px"
-                }}
               />
 
             </div>
 
-            {/* BUTTONS */}
-
-            <div
-              style={{
-                marginTop: "20px"
-              }}
-            >
-
-              {
-
-                activeRecord.status ===
-                "Working"
-
-                ? (
-
-                  <button
-                    onClick={() =>
-                      takeBreak(
-                        activeRecord.id
-                      )
-                    }
-                    style={{
-                      padding: "12px 25px",
-                      background: "#f59e0b",
-                      border: "none",
-                      borderRadius: "10px",
-                      color: "white",
-                      marginRight: "15px"
-                    }}
-                  >
-                    Take Break
-                  </button>
-
-                )
-
-                : (
-
-                  <button
-                    onClick={() =>
-                      resumeWork(
-                        activeRecord.id
-                      )
-                    }
-                    style={{
-                      padding: "12px 25px",
-                      background: "#3b82f6",
-                      border: "none",
-                      borderRadius: "10px",
-                      color: "white",
-                      marginRight: "15px"
-                    }}
-                  >
-                    Resume Work
-                  </button>
-
-                )
-              }
-
-              <button
-                onClick={() =>
-                  clockOut(
-                    activeRecord.id
-                  )
-                }
-                style={{
-                  padding: "12px 25px",
-                  background: "#ef4444",
-                  border: "none",
-                  borderRadius: "10px",
-                  color: "white"
-                }}
-              >
-                Clock Out
-              </button>
-
-            </div>
-
           </div>
-
-        )
-      }
-
-      {/* TABLE */}
-
-      <div className="table-card">
-        <table>
-
-          <thead
-            style={{
-              background: "#1e293b",
-              color: "white"
-            }}
-          >
-
-            <tr>
-
-              <th>Date</th>
-
-              <th>Today Status</th>
-
-              <th>Feeling</th>
-
-              <th>Clock In</th>
-
-              <th>Clock Out</th>
-
-              <th>Status</th>
-
-              <th>Working Hours</th>
-
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            {
-
-              records.map((item) => (
-
-                <tr
-                  key={item.id}
-                >
-
-                  <td>
-                    {item.date}
-                  </td>
-
-                  <td>
-                    {item.todayStatus}
-                  </td>
-
-                  <td>
-                    {item.feeling}
-                  </td>
-
-                  <td>
-                    {item.clockIn}
-                  </td>
-
-                  <td>
-                    {
-
-                      item.clockOut || "-"
-                    }
-
-                  </td>
-
-                  <td>
-
-                    <span
-                      style={{
-
-                        padding:
-                          "6px 14px",
-
-                        borderRadius:
-                          "30px",
-
-                        color:
-                          "white",
-
-                        background:
-
-                          item.status ===
-                          "Working"
-
-                          ? "#22c55e"
-
-                          : item.status ===
-                            "Break"
-
-                          ? "#f59e0b"
-
-                          : "#ef4444"
-                      }}
-                    >
-
-                      {
-
-                        item.status ===
-                        "Working"
-
-                        ? "🟢 Working"
-
-                        : item.status ===
-                          "Break"
-
-                        ? "☕ Break"
-
-                        : "🔴 Not Working"
-                      }
-
-                    </span>
-
-                  </td>
-
-                  <td>
-
-                    {
-
-                      item.workingHours ||
-                      "0 hrs"
-                    }
-
-                  </td>
-
-                </tr>
-
-              ))
-            }
-
-          </tbody>
-
-        </table>
+        )}
 
       </div>
 
-      </div>
     </div>
   );
 }
