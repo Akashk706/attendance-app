@@ -13,8 +13,13 @@ export default function Dashboard() {
   // BACKEND URL
   // =========================
 
-  const API =
-    "https://your-backend-url.onrender.com";
+  const baseURL =
+    import.meta.env.VITE_API_BASE_URL ||
+    (import.meta.env.MODE === "development"
+      ? "http://localhost:5000"
+      : "https://attendance-backend-32mo.onrender.com");
+
+  const API = `${baseURL}/api`;
 
   // =========================
   // STATES
@@ -22,6 +27,9 @@ export default function Dashboard() {
 
   const [attendance, setAttendance] =
     useState([]);
+
+  const [attendanceId, setAttendanceId] =
+    useState("");
 
   const [status, setStatus] =
     useState("Office Work");
@@ -63,10 +71,27 @@ export default function Dashboard() {
 
       const response =
         await axios.get(
-          `${API}/attendance`
+          `${API}/attendance/all`
         );
 
       setAttendance(response.data);
+
+      const activeRecord =
+        response.data.find(
+          (item) =>
+            item.status === "Working" ||
+            item.status === "Break"
+        );
+
+      if (activeRecord) {
+        setAttendanceId(activeRecord.id);
+        setCurrentStatus(activeRecord.status);
+        setClockIn(activeRecord.clockIn || "");
+        setClockOut(activeRecord.clockOut || "");
+        setWorkingHours(
+          activeRecord.workingHours || ""
+        );
+      }
 
     } catch (error) {
 
@@ -80,56 +105,81 @@ export default function Dashboard() {
 
   }, []);
 
-  // =========================
-  // SAVE DATA
-  // =========================
-
-  const saveAttendance = async (
-    updatedStatus
-  ) => {
-
+  const startDay = async () => {
     try {
-
-      const data = {
-
-        name: "Akash",
-
-        date:
-          new Date().toLocaleDateString(),
-
-        status,
-
-        feeling,
-
-        currentStatus: updatedStatus,
-
-        clockIn,
-
-        clockOut,
-
-        workingHours,
-
-        progress,
-
-        tasks,
-
-        issues,
-
-        tomorrowPlan,
-      };
-
-      await axios.post(
-        `${API}/attendance`,
-        data
+      const storedUser = JSON.parse(
+        localStorage.getItem("user") || "{}"
       );
 
-      fetchAttendance();
+      const response = await axios.post(
+        `${API}/attendance/clock-in`,
+        {
+          userId:
+            storedUser.id || "1",
+          userName:
+            storedUser.name || "Akash",
+          todayStatus: status,
+          feeling,
+        }
+      );
 
+      setAttendance((prev) => [
+        ...prev,
+        response.data,
+      ]);
+      setAttendanceId(response.data.id);
+      setClockIn(response.data.clockIn);
+      setCurrentStatus("Working");
     } catch (error) {
-
       console.log(error);
-
       alert("Error saving data");
+    }
+  };
+
+  const updateAttendanceStatus = async (
+    updatedStatus
+  ) => {
+    if (!attendanceId) {
+      alert("Please start your day first.");
+      return;
+    }
+
+    try {
+      await axios.post(
+        `${API}/attendance/update-status`,
+        {
+          attendanceId,
+          status: updatedStatus,
+        }
+      );
+
+      setCurrentStatus(updatedStatus);
+      fetchAttendance();
+    } catch (error) {
+      console.log(error);
+      alert("Error updating status");
+    }
+  };
+
+  const clockOutAttendance = async () => {
+    if (!attendanceId) {
+      alert("Please start your day first.");
+      return;
+    }
+
+    try {
+      await axios.post(
+        `${API}/attendance/clock-out`,
+        {
+          attendanceId,
+        }
+      );
+
+      setCurrentStatus("Completed");
+      fetchAttendance();
+    } catch (error) {
+      console.log(error);
+      alert("Error clocking out");
     }
   };
 
@@ -138,15 +188,7 @@ export default function Dashboard() {
   // =========================
 
   const handleStartDay = () => {
-
-    const time =
-      new Date().toLocaleTimeString();
-
-    setClockIn(time);
-
-    setCurrentStatus("Working");
-
-    saveAttendance("Working");
+    startDay();
   };
 
   // =========================
@@ -154,10 +196,7 @@ export default function Dashboard() {
   // =========================
 
   const handleBreak = () => {
-
-    setCurrentStatus("Break");
-
-    saveAttendance("Break");
+    updateAttendanceStatus("Break");
   };
 
   // =========================
@@ -165,10 +204,7 @@ export default function Dashboard() {
   // =========================
 
   const handleResume = () => {
-
-    setCurrentStatus("Working");
-
-    saveAttendance("Working");
+    updateAttendanceStatus("Working");
   };
 
   // =========================
@@ -176,33 +212,7 @@ export default function Dashboard() {
   // =========================
 
   const handleClockOut = () => {
-
-    const out =
-      new Date().toLocaleTimeString();
-
-    setClockOut(out);
-
-    const inTime =
-      new Date(`1970-01-01 ${clockIn}`);
-
-    const outTime =
-      new Date(`1970-01-01 ${out}`);
-
-    const diff =
-      (outTime - inTime) /
-      (1000 * 60 * 60);
-
-    setWorkingHours(
-      diff.toFixed(2)
-    );
-
-    setCurrentStatus("Completed");
-
-    setTimeout(() => {
-
-      saveAttendance("Completed");
-
-    }, 500);
+    clockOutAttendance();
   };
 
   // =========================
